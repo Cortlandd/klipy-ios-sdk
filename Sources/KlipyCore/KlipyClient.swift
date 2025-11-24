@@ -23,7 +23,10 @@ public final class KlipyClient: @unchecked Sendable {
 
     /// Creates a client with default base URL.
     public static func live(apiKey: String) -> KlipyClient {
-        KlipyClient(configuration: KlipyConfiguration(apiKey: apiKey))
+        KlipyClient(
+            configuration: KlipyConfiguration(apiKey: apiKey),
+            urlSession: .shared
+        )
     }
 }
 
@@ -238,6 +241,8 @@ public extension KlipyClient {
     }
 
     /// Hide an item from a user's Recent list.
+    ///
+    /// DELETE /api/v1/{app_key}/{kind}/recent/{customer_id}/{slug}
     func hideFromRecent(
         kind: KlipyMediaType,
         customerId: String,
@@ -254,6 +259,9 @@ public extension KlipyClient {
 
 
     /// Share trigger: notify Klipy that a user shared an item.
+    ///
+    /// POST /api/v1/{app_key}/{kind}/share/{slug}
+    /// Body: { "customer_id": "...", "q": "search string that led to this share" }
     func triggerShare(
         kind: KlipyMediaType,
         slug: String,
@@ -278,7 +286,10 @@ public extension KlipyClient {
         ) as EmptyResponse
     }
 
-    /// Report API: flag an item.
+    /// Report API: flag an item as inappropriate / problematic.
+    ///
+    /// POST /api/v1/{app_key}/{kind}/report/{slug}
+    /// Body: { "customer_id"?: "...", "reason": "..." }
     func report(
         kind: KlipyMediaType,
         slug: String,
@@ -295,8 +306,7 @@ public extension KlipyClient {
 
         _ = try await request(
             pathComponents: [
-                "api", "v1", configuration.apiKey,
-                kind.pathSegment, "report", slug
+                "api", "v1", configuration.apiKey, kind.pathSegment, "report", slug
             ],
             method: "POST",
             body: body

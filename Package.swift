@@ -18,6 +18,9 @@ let package = Package(
             name: "KlipyUI",
             targets: ["KlipyUI"]
         )
+    ],    
+    dependencies: [
+        .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0"))
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -33,7 +36,7 @@ let package = Package(
         ),
         .testTarget(
             name: "KlipyCoreTests",
-            dependencies: ["KlipyCore"]
+            dependencies: ["KlipyCore", "Mocker"]
         ),
     ]
 )
