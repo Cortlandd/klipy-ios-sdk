@@ -14,6 +14,8 @@ final class KlipyClientPostTests: XCTestCase {
     private var client: KlipyClient!
     /// Same sample key used in GET tests.
     private let apiKey = "wx4NS4jKDijkRGIrNvsuSRAzCm2ZQYVfBIHUU951ZPOHRBDD8OQkoNqjO16UgW1W"
+    
+    let customerId = "user-123"
 
     override func setUp() {
         super.setUp()
@@ -23,7 +25,7 @@ final class KlipyClientPostTests: XCTestCase {
         let session = URLSession(configuration: config)
 
         let klipyConfig = KlipyConfiguration(apiKey: apiKey)
-        client = KlipyClient(configuration: klipyConfig, urlSession: session)
+        client = KlipyClient(configuration: klipyConfig, customerId: customerId, urlSession: session)
 
         // opt-in so only registered mocks are intercepted
         Mocker.mode = .optin
@@ -39,7 +41,6 @@ final class KlipyClientPostTests: XCTestCase {
 
     func testTriggerShare_usesCorrectURLMethodAndBody() async throws {
         let slug = "hello-hi-662"
-        let customerId = "user-123"
         let query = "hello"
 
         let url = URL(string: "https://api.klipy.com/api/v1/\(apiKey)/gifs/share/\(slug)")!
@@ -61,7 +62,7 @@ final class KlipyClientPostTests: XCTestCase {
             httpBodyType: [String: String].self
         ) { request, body in
             XCTAssertEqual(request.httpMethod, "POST")
-            XCTAssertEqual(body!["customer_id"], customerId)
+            XCTAssertEqual(body!["customer_id"], self.customerId)
             XCTAssertEqual(body!["q"], query)
         }
 
@@ -72,7 +73,6 @@ final class KlipyClientPostTests: XCTestCase {
         try await client.triggerShare(
             kind: .gif,
             slug: slug,
-            customerId: customerId,
             searchQuery: query
         )
 
@@ -86,7 +86,6 @@ final class KlipyClientPostTests: XCTestCase {
     // MARK: - Hide from Recent
 
     func testHideFromRecent_usesCorrectURLAndMethod() async throws {
-        let customerId = "user-789"
         let slug = "hello-hi-662"
 
         let url = URL(string: "https://api.klipy.com/api/v1/\(apiKey)/gifs/recent/\(customerId)/\(slug)")!
@@ -115,7 +114,6 @@ final class KlipyClientPostTests: XCTestCase {
 
         try await client.hideFromRecent(
             kind: .gif,
-            customerId: customerId,
             slug: slug
         )
 

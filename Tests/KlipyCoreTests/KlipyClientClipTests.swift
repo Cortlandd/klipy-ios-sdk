@@ -27,8 +27,6 @@ final class KlipyClientClipTests: XCTestCase {
     }
     
     func testSearchClipsReturnsPage() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         // When
         let page = try await client.searchClips(
@@ -36,7 +34,6 @@ final class KlipyClientClipTests: XCTestCase {
             page: 1,
             perPage: 5,
             locale: "en-US",
-            customerId: customerId
         )
         
         // Then
@@ -45,15 +42,12 @@ final class KlipyClientClipTests: XCTestCase {
     }
     
     func testTrendingClipsReturnsPage() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         // When
         let page = try await client.trendingClips(
             page: 1,
             perPage: 5,
             locale: "en-US",
-            customerId: customerId
         )
         
         // Then
@@ -62,14 +56,11 @@ final class KlipyClientClipTests: XCTestCase {
     }
     
     func testClipFetchesItemBySlugFromTrending() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         let trending = try await client.trendingClips(
             page: 1,
             perPage: 1,
             locale: "en-US",
-            customerId: customerId
         )
         
         guard let first = trending.data.first else {

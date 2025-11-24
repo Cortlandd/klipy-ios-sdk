@@ -12,13 +12,17 @@ public final class KlipyClient: @unchecked Sendable {
 
     public let configuration: KlipyConfiguration
     private let urlSession: URLSession
+    
+    private let resolvedCustomerId: String
 
     public init(
         configuration: KlipyConfiguration,
+        customerId: String? = nil,
         urlSession: URLSession = .shared
     ) {
         self.configuration = configuration
         self.urlSession = urlSession
+        self.resolvedCustomerId = KlipyCustomerIdProvider.resolve(provided: customerId)
     }
 
     /// Creates a client with default base URL.
@@ -96,8 +100,7 @@ public extension KlipyClient {
         kind: KlipyMediaType,
         page: Int? = nil,
         perPage: Int? = nil,
-        locale: String? = nil,
-        customerId: String
+        locale: String? = nil
     ) async throws -> KlipyPage<KlipyMedia> {
         var params: [String: String] = [:]
         if let page = page { params["page"] = String(page) }
@@ -108,7 +111,7 @@ public extension KlipyClient {
             params["locale"] = loc
         }
         
-        params["customer_id"] = customerId
+        params["customer_id"] = resolvedCustomerId
 
         let envelope: KlipyEnvelope<KlipyPage<KlipyMedia>> = try await request(
             pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, "trending"],
@@ -123,8 +126,7 @@ public extension KlipyClient {
         query: String,
         page: Int? = nil,
         perPage: Int? = nil,
-        locale: String? = nil,
-        customerId: String? = nil
+        locale: String? = nil
     ) async throws -> KlipyPage<KlipyMedia> {
         var params: [String: String] = ["q": query]
         if let page = page { params["page"] = String(page) }
@@ -134,9 +136,8 @@ public extension KlipyClient {
         if let loc = locale ?? configuration.defaultLocale {
             params["locale"] = loc
         }
-        if let customerId = customerId {
-            params["customer_id"] = customerId
-        }
+        
+        params["customer_id"] = resolvedCustomerId
 
         let envelope: KlipyEnvelope<KlipyPage<KlipyMedia>> = try await request(
             pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, "search"],
@@ -148,7 +149,6 @@ public extension KlipyClient {
     /// Recent items per user for a given media type.
     func recent(
         kind: KlipyMediaType,
-        customerId: String,
         page: Int? = nil,
         perPage: Int? = nil,
         locale: String? = nil,
@@ -169,7 +169,7 @@ public extension KlipyClient {
         }
 
         let envelope: KlipyEnvelope<KlipyPage<KlipyMedia>> = try await request(
-            pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, "recent", customerId],
+            pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, "recent", resolvedCustomerId],
             queryItems: params
         )
         return envelope.data
@@ -245,13 +245,12 @@ public extension KlipyClient {
     /// DELETE /api/v1/{app_key}/{kind}/recent/{customer_id}/{slug}
     func hideFromRecent(
         kind: KlipyMediaType,
-        customerId: String,
         slug: String
     ) async throws {
         _ = try await request(
             pathComponents: [
                 "api", "v1", configuration.apiKey,
-                kind.pathSegment, "recent", customerId, slug
+                kind.pathSegment, "recent", resolvedCustomerId, slug
             ],
             method: "DELETE"
         ) as EmptyResponse
@@ -265,7 +264,6 @@ public extension KlipyClient {
     func triggerShare(
         kind: KlipyMediaType,
         slug: String,
-        customerId: String,
         searchQuery: String
     ) async throws {
         struct Payload: Codable {
@@ -273,7 +271,7 @@ public extension KlipyClient {
             let q: String
         }
 
-        let payload = Payload(customer_id: customerId, q: searchQuery)
+        let payload = Payload(customer_id: resolvedCustomerId, q: searchQuery)
         let body = try JSONEncoder().encode(payload)
 
         _ = try await request(
@@ -293,7 +291,6 @@ public extension KlipyClient {
     func report(
         kind: KlipyMediaType,
         slug: String,
-        customerId: String? = nil,
         reason: String
     ) async throws {
         struct Payload: Codable {
@@ -301,7 +298,7 @@ public extension KlipyClient {
             let reason: String
         }
 
-        let payload = Payload(customer_id: customerId, reason: reason)
+        let payload = Payload(customer_id: resolvedCustomerId, reason: reason)
         let body = try JSONEncoder().encode(payload)
 
         _ = try await request(

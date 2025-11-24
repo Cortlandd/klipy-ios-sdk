@@ -15,3 +15,20 @@ public enum KlipyError: Error, Sendable {
     case transportError(underlying: Error)
     case invalidParameters(message: String)
 }
+
+extension KlipyError: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .invalidURL:
+            return "The Klipy URL could not be constructed."
+        case .invalidParameters(let message):
+            return "Invalid parameters: \(message)"
+        case .httpError(let code, _):
+            return "HTTP error (\(code)) from Klipy."
+        case .decodingError(let underlying):
+            return "Failed to decode Klipy response: \(underlying.localizedDescription)"
+        case .transportError(let underlying):
+            return "Network/transport error: \(underlying.localizedDescription)"
+        }
+    }
+}

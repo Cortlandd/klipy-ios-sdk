@@ -29,8 +29,6 @@ final class KlipyClientGIFTests: XCTestCase {
     }
     
     func testSearchGIFsReturnsPage() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         // When
         let page = try await client.searchGIFs(
@@ -38,7 +36,6 @@ final class KlipyClientGIFTests: XCTestCase {
             page: 1,
             perPage: 5,
             locale: "en-US",
-            customerId: customerId
         )
         
         // Then
@@ -47,15 +44,12 @@ final class KlipyClientGIFTests: XCTestCase {
     }
     
     func testTrendingGIFsReturnsPage() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         // When
         let page = try await client.trendingGIFs(
             page: 1,
             perPage: 5,
             locale: "en-US",
-            customerId: customerId
         )
         
         // Then
@@ -64,14 +58,11 @@ final class KlipyClientGIFTests: XCTestCase {
     }
     
     func testGifFetchesItemBySlugFromTrending() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         let trending = try await client.trendingGIFs(
             page: 1,
             perPage: 1,
             locale: "en-US",
-            customerId: customerId
         )
         
         guard let first = trending.data.first else {

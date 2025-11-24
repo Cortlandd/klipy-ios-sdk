@@ -53,7 +53,6 @@ public extension KlipyClient {
     /// Internally just passes `adParams` into the generic `recent` method.
     func recentWithAds(
         kind: KlipyMediaType,
-        customerId: String,
         page: Int? = nil,
         perPage: Int? = nil,
         locale: String? = nil,
@@ -61,7 +60,6 @@ public extension KlipyClient {
     ) async throws -> KlipyPage<KlipyMedia> {
         try await recent(
             kind: kind,
-            customerId: customerId,
             page: page,
             perPage: perPage,
             locale: locale,

@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "KlipySDK",
     platforms: [
-        .iOS(.v13)
+        .iOS(.v15)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -18,9 +18,10 @@ let package = Package(
             name: "KlipyUI",
             targets: ["KlipyUI"]
         )
-    ],    
+    ],
     dependencies: [
-        .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0"))
+        .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0")),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMajor(from: "1.23.1")),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -32,7 +33,8 @@ let package = Package(
         .target(
             name: "KlipyUI",
             dependencies: ["KlipyCore"],
-            path: "Sources/KlipyUI"
+            path: "Sources/KlipyUI",
+            resources: [.process("Resources/Media.xcassets")]
         ),
         .testTarget(
             name: "KlipyCoreTests",

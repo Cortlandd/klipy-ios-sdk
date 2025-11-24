@@ -28,8 +28,6 @@ final class KlipyClientMemeConvenienceTests: XCTestCase {
     }
     
     func testSearchMemesReturnsPage() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         // When
         let page = try await client.searchMemes(
@@ -37,7 +35,6 @@ final class KlipyClientMemeConvenienceTests: XCTestCase {
             page: 1,
             perPage: 5,
             locale: "en-US",
-            customerId: customerId
         )
         
         // Then
@@ -46,15 +43,12 @@ final class KlipyClientMemeConvenienceTests: XCTestCase {
     }
     
     func testTrendingMemesReturnsPage() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         // When
         let page = try await client.trendingMemes(
             page: 1,
             perPage: 5,
             locale: "en-US",
-            customerId: customerId
         )
         
         // Then
@@ -63,14 +57,11 @@ final class KlipyClientMemeConvenienceTests: XCTestCase {
     }
     
     func testMemeFetchesItemBySlugFromTrending() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         let trending = try await client.trendingMemes(
             page: 1,
             perPage: 1,
             locale: "en-US",
-            customerId: customerId
         )
         
         guard let first = trending.data.first else {

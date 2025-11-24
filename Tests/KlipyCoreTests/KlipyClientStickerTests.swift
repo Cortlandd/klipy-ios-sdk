@@ -28,8 +28,6 @@ final class KlipyClientStickerConvenienceTests: XCTestCase {
     }
     
     func testSearchStickersReturnsPage() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         // When
         let page = try await client.searchStickers(
@@ -37,7 +35,6 @@ final class KlipyClientStickerConvenienceTests: XCTestCase {
             page: 1,
             perPage: 5,
             locale: "en-US",
-            customerId: customerId
         )
         
         // Then
@@ -46,15 +43,12 @@ final class KlipyClientStickerConvenienceTests: XCTestCase {
     }
     
     func testTrendingStickersReturnsPage() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         // When
         let page = try await client.trendingStickers(
             page: 1,
             perPage: 5,
             locale: "en-US",
-            customerId: customerId
         )
         
         // Then
@@ -63,14 +57,11 @@ final class KlipyClientStickerConvenienceTests: XCTestCase {
     }
     
     func testStickerFetchesItemBySlugFromTrending() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         let trending = try await client.trendingStickers(
             page: 1,
             perPage: 1,
             locale: "en-US",
-            customerId: customerId
         )
         
         guard let first = trending.data.first else {

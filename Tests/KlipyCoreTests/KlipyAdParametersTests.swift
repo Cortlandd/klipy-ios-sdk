@@ -75,8 +75,6 @@ final class KlipyClientAdsTests: XCTestCase {
     }
     
     func testRecentWithAdsReturnsPageForGIFs() async throws {
-        // Given
-        let customerId = "test-user-\(UUID().uuidString)"
         
         let adParams = KlipyAdParameters(
             minWidth: 320,
@@ -90,7 +88,6 @@ final class KlipyClientAdsTests: XCTestCase {
         // When
         let page = try await client.recentWithAds(
             kind: .gif,
-            customerId: customerId,
             page: 1,
             perPage: 5,
             locale: "en-US",

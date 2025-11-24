@@ -13,8 +13,7 @@ public extension KlipyClient {
         query: String,
         page: Int? = nil,
         perPage: Int? = nil,
-        locale: String? = nil,
-        customerId: String? = nil
+        locale: String? = nil
     ) async throws -> KlipyPage<KlipyMedia> {
         try await search(
             kind: .sticker,
@@ -22,7 +21,6 @@ public extension KlipyClient {
             page: page,
             perPage: perPage,
             locale: locale,
-            customerId: customerId
         )
     }
 
@@ -30,14 +28,12 @@ public extension KlipyClient {
         page: Int? = nil,
         perPage: Int? = nil,
         locale: String? = nil,
-        customerId: String
     ) async throws -> KlipyPage<KlipyMedia> {
         try await trending(
             kind: .sticker,
             page: page,
             perPage: perPage,
             locale: locale,
-            customerId: customerId
         )
     }
 
