@@ -22,6 +22,8 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0")),
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMajor(from: "1.23.1")),
+        .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "3.0.0"),
+        .package(url: "https://github.com/SDWebImage/SDWebImageWebPCoder.git", from: "0.3.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -32,7 +34,7 @@ let package = Package(
         ),
         .target(
             name: "KlipyUI",
-            dependencies: ["KlipyCore"],
+            dependencies: ["KlipyCore", "SDWebImageSwiftUI", "SDWebImageWebPCoder"],
             path: "Sources/KlipyUI",
             resources: [.process("Resources/Media.xcassets")]
         ),

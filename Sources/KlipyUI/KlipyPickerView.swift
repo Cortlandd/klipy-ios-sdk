@@ -7,6 +7,7 @@
 
 import SwiftUI
 import KlipyCore
+import SDWebImageSwiftUI
 
 public struct KlipyPickerView: View {
     @Environment(\.openURL) private var openURL
@@ -14,6 +15,9 @@ public struct KlipyPickerView: View {
     @StateObject private var viewModel: KlipyPickerViewModel
     private let onSelect: (KlipyMedia) -> Void
     private let onClose: (() -> Void)?
+    
+    // Global mute state for clips in this picker
+    @State private var isClipsMuted: Bool = true
 
     public init(
         client: KlipyClient,
@@ -27,6 +31,7 @@ public struct KlipyPickerView: View {
                 initialTab: initialTab
             )
         )
+        KlipyUIBootstrap.configureIfNeeded()
         self.onSelect = onSelect
         self.onClose = onClose
     }
@@ -41,10 +46,12 @@ public struct KlipyPickerView: View {
                 searchField
                 content
             }
+            .padding(.horizontal, 8)
 
             poweredByBar
         }
         .padding(.top, 4)
+        .padding(.bottom, 8)
         .onAppear {
             viewModel.loadInitial()
         }
@@ -71,33 +78,39 @@ public struct KlipyPickerView: View {
     // MARK: - Bottom "Powered by Klipy"
 
     private var poweredByBar: some View {
-        Button {
-            if let url = URL(string: "https://klipy.com/en-US") {
-                openURL(url)
-            }
-        } label: {
-            HStack(spacing: 6) {
-                Image(.klipyLogo)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 16, height: 16)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+        VStack(spacing: 0) {
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(Color.gray)
+            Button {
+                if let url = URL(string: "https://klipy.com/en-US") {
+                    openURL(url)
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(.klipyLogo)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
 
-                Text("Powered by Klipy")
-                    .font(.footnote.weight(.semibold))
+                    Text("Powered by Klipy")
+                        .font(.footnote.weight(.semibold))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 4)
             }
-            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .buttonStyle(.plain)
+            .padding(.horizontal, 8)
+            .padding(.top, 4)
+            .accessibilityLabel("Open Klipy website")
         }
-        .buttonStyle(.plain)
-        .padding(.horizontal, 8)
-        .padding(.top, 4)
-        .accessibilityLabel("Open Klipy website")
     }
 
-    // MARK: - Existing pieces (unchanged behavior)
+    // MARK: - Tabs
 
     private var tabSelector: some View {
-        // Either your segmented control or pill row:
         Picker("Type", selection: $viewModel.selectedTab) {
             ForEach(KlipyPickerMediaTab.allCases, id: \.self) { tab in
                 Text(tab.title).tag(tab)
@@ -108,6 +121,8 @@ public struct KlipyPickerView: View {
             viewModel.didChangeTab(newValue)
         }
     }
+
+    // MARK: - Search
 
     private var searchField: some View {
         HStack {
@@ -139,6 +154,8 @@ public struct KlipyPickerView: View {
         }
     }
 
+    // MARK: - Content
+
     private var content: some View {
         Group {
             if viewModel.isLoading && viewModel.items.isEmpty {
@@ -163,67 +180,80 @@ public struct KlipyPickerView: View {
         }
     }
 
+    // Two-column, variable-height grid like Giphy
+    private var gridColumns: [GridItem] {
+        return [
+            GridItem(.flexible(), spacing: 4),
+            GridItem(.flexible(), spacing: 4)
+        ]
+    }
+
     private var scrollGrid: some View {
         ScrollView {
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3),
-                spacing: 4
-            ) {
+            LazyVGrid(columns: gridColumns, alignment: .center, spacing: 4) {
                 ForEach(viewModel.items, id: \.id) { media in
-                    KlipyMediaTile(media: media)
-                        .onAppear {
-                            viewModel.loadMoreIfNeeded(currentItem: media)
-                        }
-                        .onTapGesture {
-                            onSelect(media)
-                        }
+                    Button {
+                        onSelect(media)
+                    } label: {
+                        KlipyThumbnailView(media: media, isClipsMuted: $isClipsMuted)
+                    }
+                    .buttonStyle(.plain)
+                    .onAppear {
+                        viewModel.loadMoreIfNeeded(currentItem: media)
+                    }
+                }
+
+                if viewModel.isLoading && !viewModel.items.isEmpty {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
                 }
             }
-
-            if viewModel.isLoading && !viewModel.items.isEmpty {
-                ProgressView()
-                    .padding(.vertical, 8)
-            }
+            .padding(.horizontal, 4)
+            .padding(.vertical, 4)
         }
     }
 }
 
+// MARK: - Thumbnail tile
 
-struct KlipyMediaTile: View {
+struct KlipyThumbnailView: View {
     let media: KlipyMedia
-
-    private var previewURL: URL? {
-        media.file?.xs?.webp?.url ??
-        media.file?.xs?.gif?.url ??
-        media.file?.sm?.webp?.url ??
-        media.file?.sm?.gif?.url ??
-        media.file?.md?.webp?.url ??
-        media.file?.md?.gif?.url
-    }
+    @Binding var isClipsMuted: Bool
 
     var body: some View {
-        ZStack {
-            if let url = previewURL {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        Color.secondary.opacity(0.1)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    case .failure:
-                        Color.secondary.opacity(0.2)
-                    @unknown default:
-                        Color.secondary.opacity(0.1)
-                    }
-                }
+        ZStack(alignment: .topTrailing) {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(.systemGray6))
+
+            if let url = media.previewURL {
+                WebImage(url: url)
+                    .resizable()
+                    .indicator(.activity)
+                    .aspectRatio(media.displayAspectRatio, contentMode: .fill)
+                    .clipped()
+                    .cornerRadius(10)
             } else {
-                Color.secondary.opacity(0.1)
+                Image(systemName: "photo")
+                    .foregroundColor(.secondary)
+            }
+
+            if media.type == .clip {
+                Button {
+                    isClipsMuted.toggle()
+                } label: {
+                    Image(systemName: isClipsMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.white)
+                        .padding(6)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Circle())
+                }
+                .padding(6)
+                .buttonStyle(.plain)
             }
         }
-        .aspectRatio(1, contentMode: .fit)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .aspectRatio(media.displayAspectRatio, contentMode: .fit)
     }
 }
 

@@ -6,10 +6,12 @@
 //
 
 import Foundation
+import CoreGraphics
+
+// MARK: - Media Type
 
 /// Type of media returned by the Klipy API.
-/// The exact set may grow as Klipy adds products.
-public enum KlipyMediaType: String, Codable, Sendable {
+public enum KlipyMediaType: String, Codable, Sendable, Equatable {
     case gif
     case sticker
     case clip
@@ -26,43 +28,18 @@ public enum KlipyMediaType: String, Codable, Sendable {
     }
 }
 
-/// Individual rendition of a media item (legacy helper).
-/// You can still use this if you want to normalize
-/// a chosen variant into a simpler shape.
-public struct KlipyMediaRendition: Codable, Sendable {
-    public let url: URL
-    public let width: Int?
-    public let height: Int?
-    public let sizeBytes: Int?
-    public let mimeType: String?
-
-    public init(
-        url: URL,
-        width: Int? = nil,
-        height: Int? = nil,
-        sizeBytes: Int? = nil,
-        mimeType: String? = nil
-    ) {
-        self.url = url
-        self.width = width
-        self.height = height
-        self.sizeBytes = sizeBytes
-        self.mimeType = mimeType
-    }
-}
-
 // MARK: - Nested file structure
 
-/// Lowest-level asset in the `file` tree.
+/// Lowest-level asset in the `file` tree for GIF/meme/sticker.
 ///
 /// Example:
 /// "gif": {
-///   "url": "https://static.klipy.com/...",
+///   "url": "https://static.klipy.com/",
 ///   "width": 498,
 ///   "height": 498,
 ///   "size": 4001918
 /// }
-public struct KlipyMediaFileAsset: Codable, Sendable {
+public struct KlipyMediaFileAsset: Codable, Sendable, Equatable {
     public let url: URL
     public let width: Int?
     public let height: Int?
@@ -78,7 +55,7 @@ public struct KlipyMediaFileAsset: Codable, Sendable {
 
 /// A resolution bucket inside `file` (hd, md, sm, xs),
 /// containing multiple formats (gif, webp, jpg, mp4, webm).
-public struct KlipyMediaFileBucket: Codable, Sendable {
+public struct KlipyMediaFileBucket: Codable, Sendable, Equatable {
     public let gif: KlipyMediaFileAsset?
     public let webp: KlipyMediaFileAsset?
     public let jpg: KlipyMediaFileAsset?
@@ -88,66 +65,68 @@ public struct KlipyMediaFileBucket: Codable, Sendable {
 
 /// Full `file` object as returned by the Klipy API.
 ///
-/// Example:
+/// GIF/meme/sticker:
 /// "file": {
 ///   "hd": { "gif": { ... }, "webp": { ... }, ... },
 ///   "md": { ... },
 ///   "sm": { ... },
 ///   "xs": { ... }
 /// }
-public struct KlipyMediaFile: Codable, Sendable {
+///
+/// Clip responses:
+/// "file": {
+///   "mp4": "https://...",
+///   "gif": "https://.../something.gif",
+///   "webp": "https://.../something.webp"
+/// }
+public struct KlipyMediaFile: Codable, Sendable, Equatable {
+    // GIF-style buckets
     public let hd: KlipyMediaFileBucket?
     public let md: KlipyMediaFileBucket?
     public let sm: KlipyMediaFileBucket?
     public let xs: KlipyMediaFileBucket?
+
+    // Clip-style flat fields (strings → URLs)
+    public let mp4: URL?
+    public let gif: URL?
+    public let webp: URL?
+}
+
+/// Metadata for clip `file_meta`.
+public struct KlipyMediaFileMeta: Codable, Sendable, Equatable {
+    public let mp4: KlipyMediaFileMetaEntry?
+    public let gif: KlipyMediaFileMetaEntry?
+    public let webp: KlipyMediaFileMetaEntry?
+}
+
+public struct KlipyMediaFileMetaEntry: Codable, Sendable, Equatable {
+    public let width: Int?
+    public let height: Int?
 }
 
 // MARK: - Public media model
 
 /// KLIPY media item (GIF, Sticker, Clip, Meme).
-/// Shape is designed to be stable across products.
-public struct KlipyMedia: Codable, Identifiable, Sendable {
-    /// Unique identifier for the item. Handling separately if its an Int
+public struct KlipyMedia: Codable, Identifiable, Sendable, Equatable {
+    /// Unique identifier for the item.
+    /// The API sometimes sends `id` as an Int or String; we normalize to String.
     public let id: String
 
-    /// Human readable slug/short id if available.
+    /// Human readable slug/short id.
     public let slug: String
 
     public let type: KlipyMediaType
-
     public let title: String?
 
-    /// Raw `file` tree with all variants (hd/md/sm/xs × gif/webp/jpg/mp4/webm).
+    /// Raw `file` tree with all variants.
     public let file: KlipyMediaFile?
+    public let fileMeta: KlipyMediaFileMeta?
 
-    /// Base64 blur preview (if present).
+    /// Base64 blur preview (`data:image/jpeg;base64,...`).
     public let blurPreview: String?
-
-    /// Primary preview image (low-res static or animated).
-    /// Derived from `file` (prefers `sm.gif` → `xs.gif` → `sm.webp` → `xs.webp` → `sm.jpg`).
-    public let previewURL: URL?
-
-    /// Main GIF URL (for GIF-type items).
-    /// Derived from `file` (prefers `md.gif` → `hd.gif` → `sm.gif` → `xs.gif`).
-    public let gifURL: URL?
-
-    /// Optional MP4 URL (for clips or optimized playback).
-    /// Derived from `file` (prefers `md.mp4` → `hd.mp4` → `sm.mp4` → `xs.mp4`).
-    public let mp4URL: URL?
-
-    /// Optional WebP URL for supported platforms.
-    /// Derived from `file` (prefers `md.webp` → `hd.webp` → `sm.webp` → `xs.webp`).
-    public let webpURL: URL?
-
-    /// Chosen width/height for the primary playback asset.
-    /// Prefers the GIF dimensions; falls back to preview.
-    public let width: Int?
-    public let height: Int?
 
     /// Tag list provided by the API.
     public let tags: [String]?
-
-    // MARK: - Coding
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -155,40 +134,12 @@ public struct KlipyMedia: Codable, Identifiable, Sendable {
         case type
         case title
         case file
-        case tags
+        case fileMeta = "file_meta"
         case blurPreview = "blur_preview"
+        case tags
     }
 
-    public init(
-        id: String,
-        slug: String,
-        type: KlipyMediaType,
-        title: String?,
-        file: KlipyMediaFile?,
-        blurPreview: String?,
-        previewURL: URL?,
-        gifURL: URL?,
-        mp4URL: URL?,
-        webpURL: URL?,
-        width: Int?,
-        height: Int?,
-        tags: [String]?
-    ) {
-        self.id = id
-        self.slug = slug
-        self.type = type
-        self.title = title
-        self.file = file
-        self.blurPreview = blurPreview
-        self.previewURL = previewURL
-        self.gifURL = gifURL
-        self.mp4URL = mp4URL
-        self.webpURL = webpURL
-        self.width = width
-        self.height = height
-        self.tags = tags
-    }
-
+    // Minimal custom decoding JUST to normalize id (Int or String).
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -205,99 +156,123 @@ public struct KlipyMedia: Codable, Identifiable, Sendable {
             self.id = UUID().uuidString
         }
 
-        self.slug = try c.decode(String.self, forKey: .slug)
-        self.type = (try? c.decode(KlipyMediaType.self, forKey: .type)) ?? .gif
-        self.title = try? c.decode(String.self, forKey: .title)
-        self.tags = try? c.decode([String].self, forKey: .tags)
+        self.slug        = (try? c.decode(String.self, forKey: .slug)) ?? self.id
+        self.type        = (try? c.decode(KlipyMediaType.self, forKey: .type)) ?? .gif
+        self.title       = try? c.decode(String.self, forKey: .title)
+        self.file        = try? c.decode(KlipyMediaFile.self, forKey: .file)
+        self.fileMeta    = try? c.decode(KlipyMediaFileMeta.self, forKey: .fileMeta)
         self.blurPreview = try? c.decode(String.self, forKey: .blurPreview)
-        self.file = try? c.decode(KlipyMediaFile.self, forKey: .file)
-
-        // Derive URLs + dimensions from the file tree
-        let derivedPreview = KlipyMedia.pickPreview(from: file)
-        let derivedGif = KlipyMedia.pickGif(from: file)
-        let derivedMp4 = KlipyMedia.pickMp4(from: file)
-        let derivedWebp = KlipyMedia.pickWebp(from: file)
-
-        self.previewURL = derivedPreview.url
-        self.gifURL = derivedGif.url
-        self.mp4URL = derivedMp4?.url
-        self.webpURL = derivedWebp?.url
-
-        // Prefer GIF dimensions, then preview
-        self.width = derivedGif.width ?? derivedPreview.width
-        self.height = derivedGif.height ?? derivedPreview.height
+        self.tags        = try? c.decode([String].self, forKey: .tags)
     }
 
-    // MARK: - Selection helpers
-
-    /// Choose the best preview asset (small GIF/WebP/JPG) for grid/list.
-    private static func pickPreview(from file: KlipyMediaFile?) -> (url: URL?, width: Int?, height: Int?) {
-        guard let file = file else { return (nil, nil, nil) }
-
-        // preference: small gif → extra-small gif → small webp → extra-small webp → small jpg
-        let candidates: [KlipyMediaFileAsset?] = [
-            file.sm?.gif,
-            file.xs?.gif,
-            file.sm?.webp,
-            file.xs?.webp,
-            file.sm?.jpg
-        ]
-
-        if let asset = candidates.compactMap({ $0 }).first {
-            return (asset.url, asset.width, asset.height)
-        }
-
-        return (nil, nil, nil)
-    }
-
-    /// Choose the main GIF asset used for playback.
-    private static func pickGif(from file: KlipyMediaFile?) -> (url: URL?, width: Int?, height: Int?) {
-        guard let file = file else { return (nil, nil, nil) }
-
-        // preference: medium → hd → small → xs
-        let candidates: [KlipyMediaFileAsset?] = [
-            file.md?.gif,
-            file.hd?.gif,
-            file.sm?.gif,
-            file.xs?.gif
-        ]
-
-        if let asset = candidates.compactMap({ $0 }).first {
-            return (asset.url, asset.width, asset.height)
-        }
-
-        return (nil, nil, nil)
-    }
-
-    /// Choose the best MP4 asset, if present.
-    private static func pickMp4(from file: KlipyMediaFile?) -> KlipyMediaFileAsset? {
-        guard let file = file else { return nil }
-
-        let candidates: [KlipyMediaFileAsset?] = [
-            file.md?.mp4,
-            file.hd?.mp4,
-            file.sm?.mp4,
-            file.xs?.mp4
-        ]
-
-        return candidates.compactMap { $0 }.first
-    }
-
-    /// Choose the best WebP asset, if present.
-    private static func pickWebp(from file: KlipyMediaFile?) -> KlipyMediaFileAsset? {
-        guard let file = file else { return nil }
-
-        let candidates: [KlipyMediaFileAsset?] = [
-            file.md?.webp,
-            file.hd?.webp,
-            file.sm?.webp,
-            file.xs?.webp
-        ]
-
-        return candidates.compactMap { $0 }.first
+    // Explicit memberwise init so you can construct in tests if needed.
+    public init(
+        id: String,
+        slug: String,
+        type: KlipyMediaType,
+        title: String? = nil,
+        file: KlipyMediaFile? = nil,
+        fileMeta: KlipyMediaFileMeta? = nil,
+        blurPreview: String? = nil,
+        tags: [String]? = nil
+    ) {
+        self.id = id
+        self.slug = slug
+        self.type = type
+        self.title = title
+        self.file = file
+        self.fileMeta = fileMeta
+        self.blurPreview = blurPreview
+        self.tags = tags
     }
 }
 
-public struct KlipyMediaListPayload: Decodable, Sendable {
+// Simple wrapper for endpoints that return `{ "data": [ ... ] }`
+public struct KlipyMediaListPayload: Decodable, Sendable, Equatable {
     public let data: [KlipyMedia]
+}
+
+// MARK: - URL selection helpers
+
+public extension KlipyMedia {
+    /// Aspect ratio used for grid tiles.
+    ///
+    /// - For most types we use `file_meta.webp` as-is.
+    /// - For clips we clamp to a reasonable range so extremely wide/short clips
+    ///   don't break the grid layout.
+    var aspectRatio: CGFloat {
+        let base: CGFloat
+
+        if let w = fileMeta?.webp?.width,
+           let h = fileMeta?.webp?.height,
+           h > 0 {
+            base = CGFloat(w) / CGFloat(h)
+        } else {
+            base = 1.0
+        }
+
+        // Clips can be *very* wide vs tall. Clamp so layout stays sane.
+        if type == .clip {
+            // e.g. between ~3:4 (taller) and ~16:9 (wider)
+            return max(0.75, min(base, 1.9))
+        } else {
+            // Other media still get a bit of clamping just in case.
+            return max(0.6, min(base, 1.9))
+        }
+    }
+
+    /// Best still image to show in grids / previews.
+    ///
+    /// - First try bucketed assets (sm/xs webp/gif/jpg).
+    /// - If that fails and this is a clip, fall back to flat `file.webp/gif/mp4`.
+    /// - Does **not** use `blurPreview` as a URL.
+    var previewURL: URL? {
+        // 1. Normal bucketed assets
+        if let url =
+            file?.sm?.webp?.url ??
+            file?.sm?.gif?.url ??
+            file?.sm?.jpg?.url ??
+            file?.xs?.webp?.url ??
+            file?.xs?.gif?.url ??
+            file?.xs?.jpg?.url {
+            return url
+        }
+
+        // 2. Clip flat shape
+        if type == .clip {
+            if let webp = file?.webp { return webp }
+            if let gif  = file?.gif  { return gif }
+            if let mp4  = file?.mp4  { return mp4 }
+        }
+
+        return nil
+    }
+
+    var gifURL: URL? {
+        file?.gif
+            ?? file?.sm?.gif?.url
+            ?? file?.md?.gif?.url
+            ?? file?.xs?.gif?.url
+    }
+
+    var mp4URL: URL? {
+        file?.mp4
+            ?? file?.sm?.mp4?.url
+            ?? file?.md?.mp4?.url
+            ?? file?.xs?.mp4?.url
+    }
+
+    var webpURL: URL? {
+        file?.webp
+            ?? file?.sm?.webp?.url
+            ?? file?.md?.webp?.url
+            ?? file?.xs?.webp?.url
+    }
+    
+    var displayAspectRatio: CGFloat {
+        if type == .clip {
+            return 16.0 / 9.0
+        }
+        return aspectRatio   // your existing helper that uses fileMeta.webp
+    }
 }

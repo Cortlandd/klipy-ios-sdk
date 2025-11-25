@@ -117,6 +117,7 @@ public extension KlipyClient {
             pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, "trending"],
             queryItems: params
         )
+        print("Data: \(envelope.data)")
         return envelope.data
     }
 

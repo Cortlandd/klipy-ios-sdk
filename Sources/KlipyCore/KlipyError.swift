@@ -23,8 +23,14 @@ extension KlipyError: CustomStringConvertible {
             return "The Klipy URL could not be constructed."
         case .invalidParameters(let message):
             return "Invalid parameters: \(message)"
-        case .httpError(let code, _):
-            return "HTTP error (\(code)) from Klipy."
+        case let .httpError(statusCode, body):
+            let bodySnippet: String
+            if let body, let s = String(data: body, encoding: .utf8), !s.isEmpty {
+                bodySnippet = " body=\(s)"
+            } else {
+                bodySnippet = ""
+            }
+            return "Klipy: HTTP \(statusCode)\(bodySnippet)"
         case .decodingError(let underlying):
             return "Failed to decode Klipy response: \(underlying.localizedDescription)"
         case .transportError(let underlying):

@@ -10,22 +10,25 @@ import SwiftUI
 import KlipyCore
 
 @MainActor
-public final class KlipyPickerViewModel: ObservableObject, @unchecked Sendable {
-
+public final class KlipyPickerViewModel: ObservableObject {
     @Published public private(set) var items: [KlipyMedia] = []
-    @Published public var query: String = ""
-    @Published public var selectedTab: KlipyPickerMediaTab
     @Published public private(set) var isLoading: Bool = false
     @Published public private(set) var lastError: KlipyError?
 
+    @Published public var selectedTab: KlipyPickerMediaTab
+    @Published public var query: String = ""
+
     private let client: KlipyClient
 
+    // Pagination state
     private var currentPage: Int = 1
-    private var hasNext: Bool = true
+    private var hasNextPage: Bool = true
+    private let perPage: Int = 24
+    private var isLoadingMore: Bool = false
 
     public init(
         client: KlipyClient,
-        initialTab: KlipyPickerMediaTab = .gifs,
+        initialTab: KlipyPickerMediaTab = .gifs
     ) {
         self.client = client
         self.selectedTab = initialTab
@@ -34,13 +37,13 @@ public final class KlipyPickerViewModel: ObservableObject, @unchecked Sendable {
     // MARK: - Public API
 
     public func loadInitial() {
-        items.removeAll()
         currentPage = 1
-        hasNext = true
+        hasNextPage = true
+        items = []
         lastError = nil
 
         Task {
-            await loadPage(reset: true)
+            await loadPage(page: 1, reset: true)
         }
     }
 
@@ -50,65 +53,69 @@ public final class KlipyPickerViewModel: ObservableObject, @unchecked Sendable {
     }
 
     public func submitSearch() {
-        Task {
-            await loadPage(reset: true)
-        }
+        loadInitial()
     }
 
+    /// Called by the view when a cell appears.
     public func loadMoreIfNeeded(currentItem: KlipyMedia) {
-        guard let index = items.firstIndex(where: { $0.id == currentItem.id }) else { return }
-        let thresholdIndex = items.index(items.endIndex, offsetBy: -6, limitedBy: items.startIndex) ?? items.startIndex
+        guard hasNextPage,
+              !isLoadingMore,
+              !isLoading,
+              let last = items.last,
+              last.id == currentItem.id else {
+            return
+        }
 
-        if index >= thresholdIndex {
-            Task { await loadPage(reset: false) }
+        let nextPage = currentPage + 1
+        isLoadingMore = true
+
+        Task {
+            await loadPage(page: nextPage, reset: false)
+            isLoadingMore = false
         }
     }
 
-    // MARK: - Internal loading logic
+    // MARK: - Internal page loader
 
-    private func loadPage(reset: Bool) async {
-        if reset {
-            items = []
-            currentPage = 1
-            hasNext = true
-            lastError = nil
-        }
-
-        guard hasNext, !isLoading else { return }
+    private func loadPage(page: Int, reset: Bool) async {
         isLoading = true
         defer { isLoading = false }
 
         do {
-            let mediaType = selectedTab.mediaType
-            let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+            let kind = selectedTab.mediaType
 
-            let page: KlipyPage<KlipyMedia>
-            if trimmedQuery.isEmpty {
-                page = try await client.trending(
-                    kind: mediaType,
-                    page: currentPage,
-                    perPage: 24,
-                    locale: nil,
+            let pageResult: KlipyPage<KlipyMedia>
+
+            if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                // trending
+                pageResult = try await client.trending(
+                    kind: kind,
+                    page: page,
+                    perPage: perPage,
+                    locale: "en-US",
                 )
             } else {
-                page = try await client.search(
-                    kind: mediaType,
-                    query: trimmedQuery,
-                    page: currentPage,
-                    perPage: 24,
-                    locale: nil,
+                // search
+                pageResult = try await client.search(
+                    kind: kind,
+                    query: query,
+                    page: page,
+                    perPage: perPage,
+                    locale: "en-US",
                 )
             }
 
-            items.append(contentsOf: page.data)
-            hasNext = page.hasNext
-            if page.hasNext { currentPage += 1 }
+            currentPage = pageResult.currentPage
+            hasNextPage = pageResult.hasNext
 
-        } catch let klipyError as KlipyError {
-            lastError = klipyError
+            if reset {
+                items = pageResult.data
+            } else {
+                items.append(contentsOf: pageResult.data)
+            }
+
         } catch {
-            lastError = .transportError(underlying: error)
+            lastError = (error as? KlipyError) ?? .transportError(underlying: error)
         }
     }
-
 }
