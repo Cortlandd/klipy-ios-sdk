@@ -197,7 +197,7 @@ public struct KlipyMediaListPayload: Decodable, Sendable, Equatable {
 public extension KlipyMedia {
     /// Aspect ratio used for grid tiles.
     ///
-    /// - For most types we use `file_meta.webp` as-is.
+    /// - For most types we use `.webp` as-is.
     /// - For clips we clamp to a reasonable range so extremely wide/short clips
     ///   don't break the grid layout.
     var aspectRatio: CGFloat {
@@ -273,6 +273,6 @@ public extension KlipyMedia {
         if type == .clip {
             return 16.0 / 9.0
         }
-        return aspectRatio   // your existing helper that uses fileMeta.webp
+        return aspectRatio
     }
 }

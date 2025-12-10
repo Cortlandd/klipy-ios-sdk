@@ -18,10 +18,10 @@ public struct KlipyAdParameters: Sendable {
     public var userAgent: String?
 
     public init(
-        minWidth: Int,
-        maxWidth: Int,
-        minHeight: Int,
-        maxHeight: Int,
+        minWidth: Int = 50,
+        maxWidth: Int = 401,
+        minHeight: Int = 50,
+        maxHeight: Int = 250,
         language: String? = nil,
         userAgent: String? = nil
     ) {

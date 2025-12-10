@@ -10,7 +10,7 @@ import Foundation
 /// A generic paginated container used for the Klipy API.
 ///
 /// Klipy uses a consistent paging structure across many endpoints,
-/// but the *type of the items inside the page varies* depending on the endpoint.
+/// but the type of the items inside the page varies depending on the endpoint.
 /// Therefore, `Item` is a generic placeholder that represents the decoded
 /// element type for that specific API call.
 ///
@@ -23,7 +23,7 @@ import Foundation
 ///
 /// JSON structure this maps to:
 /// {
-///   "data": [ ... ],        // Array of `Item`
+///   "data": [ ... ], // Array of `Item`
 ///   "current_page": 1,
 ///   "per_page": 24,
 ///   "has_next": true

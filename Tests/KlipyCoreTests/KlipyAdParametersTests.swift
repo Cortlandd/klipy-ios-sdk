@@ -75,7 +75,7 @@ final class KlipyClientAdsTests: XCTestCase {
     }
     
     func testRecentWithAdsReturnsPageForGIFs() async throws {
-        
+        // Given
         let adParams = KlipyAdParameters(
             minWidth: 320,
             maxWidth: 1024,
