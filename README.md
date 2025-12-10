@@ -120,3 +120,12 @@ struct AsyncPreview: View {
     }
 }
 ```
+
+Notes:
+
+- `KlipyPickerView`:
+  - Uses KlipyPickerViewModel internally.
+  - Automatically registers WebP support via KlipyUIBootstrap.
+  - Handles search input, pagination, tab switching, and grid layout.
+- `KlipyMedia`:
+  - Provides previewURL and displayAspectRatio helpers for quick UI integration.
