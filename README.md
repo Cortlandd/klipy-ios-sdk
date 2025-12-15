@@ -50,7 +50,7 @@ If you manage dependencies in Package.swift:
 ## Basic Sample App Screenshots
 | Default State        | Search Screen          | Gif Results            | Sticker Results        | Clip Results           | Displaying selection   |
 |----------------------|------------------------|------------------------|------------------------|------------------------|------------------------|
-| ![](samples/img.png) | ![](samples/img_1.png) | ![](samples/img_2.png) | ![](samples/img_3.png) | ![](samples/img_4.png) | ![](samples/img_5.png) |
+| ![](Samples/img.png) | ![](Samples/img_1.png) | ![](Samples/img_2.png) | ![](Samples/img_3.png) | ![](Samples/img_4.png) | ![](Samples/img_5.png) |
 
 ## Quick Start – Full-screen Klipy picker (SwiftUI)
 This is the simplest way to get Klipy into your app: present the built-in picker and handle the selected media.
