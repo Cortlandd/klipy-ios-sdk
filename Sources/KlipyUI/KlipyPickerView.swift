@@ -239,18 +239,13 @@ struct KlipyThumbnailView: View {
             }
 
             if media.type == .clip {
-                Button {
-                    isClipsMuted.toggle()
-                } label: {
-                    Image(systemName: isClipsMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                        .font(.caption2.weight(.bold))
-                        .foregroundColor(.white)
-                        .padding(6)
-                        .background(.ultraThinMaterial)
-                        .clipShape(Circle())
-                }
-                .padding(6)
-                .buttonStyle(.plain)
+                Image(systemName: "play.fill")
+                    .font(.caption2.weight(.bold))
+                    .foregroundColor(.white)
+                    .padding(6)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+                    .padding(6)
             }
         }
         .aspectRatio(media.displayAspectRatio, contentMode: .fit)
