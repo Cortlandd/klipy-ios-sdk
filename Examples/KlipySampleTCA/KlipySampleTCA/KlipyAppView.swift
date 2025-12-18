@@ -58,7 +58,7 @@ struct KlipyAppView: View {
                     Text("Selected media")
                         .font(.headline)
 
-                    KlipyMediaPreview(media: media)
+                    KlipyMediaPreviewView(media: media)
                         .frame(height: 220)
 
                     Text(media.title ?? media.slug)

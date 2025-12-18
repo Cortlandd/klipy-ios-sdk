@@ -8,6 +8,7 @@
 import Foundation
 import ComposableArchitecture
 import KlipyCore
+import KlipyUI
 
 @Reducer
 public struct KlipyAppFeature {

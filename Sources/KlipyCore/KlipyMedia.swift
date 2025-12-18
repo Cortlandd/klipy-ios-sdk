@@ -51,6 +51,19 @@ public struct KlipyMediaFileAsset: Codable, Sendable, Equatable {
         case height
         case sizeBytes = "size"
     }
+
+    // Public memberwise-style initializer for use outside the module.
+    public init(
+        url: URL,
+        width: Int? = nil,
+        height: Int? = nil,
+        sizeBytes: Int? = nil
+    ) {
+        self.url = url
+        self.width = width
+        self.height = height
+        self.sizeBytes = sizeBytes
+    }
 }
 
 /// A resolution bucket inside `file` (hd, md, sm, xs),
@@ -61,6 +74,21 @@ public struct KlipyMediaFileBucket: Codable, Sendable, Equatable {
     public let jpg: KlipyMediaFileAsset?
     public let mp4: KlipyMediaFileAsset?
     public let webm: KlipyMediaFileAsset?
+
+    // Public memberwise-style initializer for use outside the module.
+    public init(
+        gif: KlipyMediaFileAsset? = nil,
+        webp: KlipyMediaFileAsset? = nil,
+        jpg: KlipyMediaFileAsset? = nil,
+        mp4: KlipyMediaFileAsset? = nil,
+        webm: KlipyMediaFileAsset? = nil
+    ) {
+        self.gif = gif
+        self.webp = webp
+        self.jpg = jpg
+        self.mp4 = mp4
+        self.webm = webm
+    }
 }
 
 /// Full `file` object as returned by the Klipy API.
@@ -90,6 +118,25 @@ public struct KlipyMediaFile: Codable, Sendable, Equatable {
     public let mp4: URL?
     public let gif: URL?
     public let webp: URL?
+
+    // Public memberwise-style initializer for use outside the module.
+    public init(
+        hd: KlipyMediaFileBucket? = nil,
+        md: KlipyMediaFileBucket? = nil,
+        sm: KlipyMediaFileBucket? = nil,
+        xs: KlipyMediaFileBucket? = nil,
+        mp4: URL? = nil,
+        gif: URL? = nil,
+        webp: URL? = nil
+    ) {
+        self.hd = hd
+        self.md = md
+        self.sm = sm
+        self.xs = xs
+        self.mp4 = mp4
+        self.gif = gif
+        self.webp = webp
+    }
 }
 
 /// Metadata for clip `file_meta`.
@@ -276,3 +323,4 @@ public extension KlipyMedia {
         return aspectRatio
     }
 }
+

@@ -17,6 +17,10 @@ let package = Package(
         .library(
             name: "KlipyUI",
             targets: ["KlipyUI"]
+        ),
+        .library(
+            name: "KlipyTray",
+            targets: ["KlipyTray"]
         )
     ],
     dependencies: [
@@ -36,6 +40,17 @@ let package = Package(
             name: "KlipyUI",
             dependencies: ["KlipyCore", "SDWebImageSwiftUI", "SDWebImageWebPCoder"],
             path: "Sources/KlipyUI",
+            resources: [.process("Resources/Media.xcassets")]
+        ),
+        .target(
+            name: "KlipyTray",
+            dependencies: [
+              "KlipyCore",
+              "KlipyUI",
+              "SDWebImageSwiftUI",
+              .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+            ],
+            path: "Sources/KlipyTray",
             resources: [.process("Resources/Media.xcassets")]
         ),
         .testTarget(

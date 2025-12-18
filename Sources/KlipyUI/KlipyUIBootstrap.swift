@@ -10,7 +10,7 @@ import SDWebImage
 import SDWebImageWebPCoder
 
 public enum KlipyUIBootstrap {
-    static func configureIfNeeded() {
+    public static func configureIfNeeded() {
         // Only register once
 //        struct Token { static var configured = false }
 //        guard !Token.configured else { return }

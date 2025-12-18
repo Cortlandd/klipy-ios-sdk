@@ -45,4 +45,12 @@ public struct KlipyPage<Item: Decodable & Sendable>: Decodable, Sendable {
         case perPage       = "per_page"
         case hasNext       = "has_next"
     }
+
+    /// Public memberwise initializer so other modules (e.g., KlipyTray) can construct pages.
+    public init(data: [Item], currentPage: Int, perPage: Int, hasNext: Bool) {
+        self.data = data
+        self.currentPage = currentPage
+        self.perPage = perPage
+        self.hasNext = hasNext
+    }
 }

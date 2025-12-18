@@ -10,13 +10,17 @@ import AVKit
 import KlipyCore
 import SDWebImageSwiftUI
 
-struct KlipyMediaPreviewView: View {
+public struct KlipyMediaPreviewView: View {
     let media: KlipyMedia
 
     @State private var player: AVPlayer?
     @State private var isMuted: Bool = true
+    
+    public init(media: KlipyMedia) {
+        self.media = media
+    }
 
-    var body: some View {
+    public var body: some View {
         Group {
             switch media.type {
             case .clip:

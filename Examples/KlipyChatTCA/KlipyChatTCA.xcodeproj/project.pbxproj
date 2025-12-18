@@ -11,6 +11,7 @@
 		7F15CE182ED54AEA00801C03 /* KlipyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7F15CE172ED54AEA00801C03 /* KlipyCore */; };
 		7F15CE1A2ED54AEA00801C03 /* KlipyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 7F15CE192ED54AEA00801C03 /* KlipyUI */; };
 		7F22922F2ED56A72009D601C /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 7F22922E2ED56A72009D601C /* SDWebImageSwiftUI */; };
+		BE020746BCFB497C93DA3609 /* KlipyTray in Frameworks */ = {isa = PBXBuildFile; productRef = 45A8BFA1B1944CF6951846CC /* KlipyTray */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -19,37 +20,37 @@
 			containerPortal = 7F15CDB72ED5277800801C03 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 7F15CDBE2ED5277800801C03;
-			remoteInfo = KlipySampleTCA;
+			remoteInfo = KlipyChatTCA;
 		};
 		7F15CDDC2ED5277A00801C03 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7F15CDB72ED5277800801C03 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 7F15CDBE2ED5277800801C03;
-			remoteInfo = KlipySampleTCA;
+			remoteInfo = KlipyChatTCA;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		7F15CDBF2ED5277800801C03 /* KlipySampleTCA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KlipySampleTCA.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		7F15CDD12ED5277A00801C03 /* KlipySampleTCATests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KlipySampleTCATests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		7F15CDDB2ED5277A00801C03 /* KlipySampleTCAUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KlipySampleTCAUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F15CDBF2ED5277800801C03 /* KlipyChatTCA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KlipyChatTCA.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F15CDD12ED5277A00801C03 /* KlipyChatTCATests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KlipyChatTCATests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F15CDDB2ED5277A00801C03 /* KlipyChatTCAUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KlipyChatTCAUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		7F15CDC12ED5277800801C03 /* KlipySampleTCA */ = {
+		7F15CDC12ED5277800801C03 /* KlipyChatTCA */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = KlipySampleTCA;
+			path = KlipyChatTCA;
 			sourceTree = "<group>";
 		};
-		7F15CDD42ED5277A00801C03 /* KlipySampleTCATests */ = {
+		7F15CDD42ED5277A00801C03 /* KlipyChatTCATests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = KlipySampleTCATests;
+			path = KlipyChatTCATests;
 			sourceTree = "<group>";
 		};
-		7F15CDDE2ED5277A00801C03 /* KlipySampleTCAUITests */ = {
+		7F15CDDE2ED5277A00801C03 /* KlipyChatTCAUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = KlipySampleTCAUITests;
+			path = KlipyChatTCAUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -61,6 +62,7 @@
 			files = (
 				7F22922F2ED56A72009D601C /* SDWebImageSwiftUI in Frameworks */,
 				7F15CE1A2ED54AEA00801C03 /* KlipyUI in Frameworks */,
+				BE020746BCFB497C93DA3609 /* KlipyTray in Frameworks */,
 				7F15CE122ED54A0E00801C03 /* ComposableArchitecture in Frameworks */,
 				7F15CE182ED54AEA00801C03 /* KlipyCore in Frameworks */,
 			);
@@ -86,9 +88,9 @@
 		7F15CDB62ED5277800801C03 = {
 			isa = PBXGroup;
 			children = (
-				7F15CDC12ED5277800801C03 /* KlipySampleTCA */,
-				7F15CDD42ED5277A00801C03 /* KlipySampleTCATests */,
-				7F15CDDE2ED5277A00801C03 /* KlipySampleTCAUITests */,
+				7F15CDC12ED5277800801C03 /* KlipyChatTCA */,
+				7F15CDD42ED5277A00801C03 /* KlipyChatTCATests */,
+				7F15CDDE2ED5277A00801C03 /* KlipyChatTCAUITests */,
 				7F15CDC02ED5277800801C03 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -96,9 +98,9 @@
 		7F15CDC02ED5277800801C03 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7F15CDBF2ED5277800801C03 /* KlipySampleTCA.app */,
-				7F15CDD12ED5277A00801C03 /* KlipySampleTCATests.xctest */,
-				7F15CDDB2ED5277A00801C03 /* KlipySampleTCAUITests.xctest */,
+				7F15CDBF2ED5277800801C03 /* KlipyChatTCA.app */,
+				7F15CDD12ED5277A00801C03 /* KlipyChatTCATests.xctest */,
+				7F15CDDB2ED5277A00801C03 /* KlipyChatTCAUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -106,9 +108,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7F15CDBE2ED5277800801C03 /* KlipySampleTCA */ = {
+		7F15CDBE2ED5277800801C03 /* KlipyChatTCA */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7F15CDE52ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipySampleTCA" */;
+			buildConfigurationList = 7F15CDE52ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipyChatTCA" */;
 			buildPhases = (
 				7F15CDBB2ED5277800801C03 /* Sources */,
 				7F15CDBC2ED5277800801C03 /* Frameworks */,
@@ -119,22 +121,23 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				7F15CDC12ED5277800801C03 /* KlipySampleTCA */,
+				7F15CDC12ED5277800801C03 /* KlipyChatTCA */,
 			);
-			name = KlipySampleTCA;
+			name = KlipyChatTCA;
 			packageProductDependencies = (
 				7F15CE112ED54A0E00801C03 /* ComposableArchitecture */,
 				7F15CE172ED54AEA00801C03 /* KlipyCore */,
 				7F15CE192ED54AEA00801C03 /* KlipyUI */,
+				45A8BFA1B1944CF6951846CC /* KlipyTray */,
 				7F22922E2ED56A72009D601C /* SDWebImageSwiftUI */,
 			);
-			productName = KlipySampleTCA;
-			productReference = 7F15CDBF2ED5277800801C03 /* KlipySampleTCA.app */;
+			productName = KlipyChatTCA;
+			productReference = 7F15CDBF2ED5277800801C03 /* KlipyChatTCA.app */;
 			productType = "com.apple.product-type.application";
 		};
-		7F15CDD02ED5277A00801C03 /* KlipySampleTCATests */ = {
+		7F15CDD02ED5277A00801C03 /* KlipyChatTCATests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7F15CDE82ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipySampleTCATests" */;
+			buildConfigurationList = 7F15CDE82ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipyChatTCATests" */;
 			buildPhases = (
 				7F15CDCD2ED5277A00801C03 /* Sources */,
 				7F15CDCE2ED5277A00801C03 /* Frameworks */,
@@ -146,18 +149,18 @@
 				7F15CDD32ED5277A00801C03 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				7F15CDD42ED5277A00801C03 /* KlipySampleTCATests */,
+				7F15CDD42ED5277A00801C03 /* KlipyChatTCATests */,
 			);
-			name = KlipySampleTCATests;
+			name = KlipyChatTCATests;
 			packageProductDependencies = (
 			);
-			productName = KlipySampleTCATests;
-			productReference = 7F15CDD12ED5277A00801C03 /* KlipySampleTCATests.xctest */;
+			productName = KlipyChatTCATests;
+			productReference = 7F15CDD12ED5277A00801C03 /* KlipyChatTCATests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		7F15CDDA2ED5277A00801C03 /* KlipySampleTCAUITests */ = {
+		7F15CDDA2ED5277A00801C03 /* KlipyChatTCAUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7F15CDEB2ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipySampleTCAUITests" */;
+			buildConfigurationList = 7F15CDEB2ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipyChatTCAUITests" */;
 			buildPhases = (
 				7F15CDD72ED5277A00801C03 /* Sources */,
 				7F15CDD82ED5277A00801C03 /* Frameworks */,
@@ -169,13 +172,13 @@
 				7F15CDDD2ED5277A00801C03 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				7F15CDDE2ED5277A00801C03 /* KlipySampleTCAUITests */,
+				7F15CDDE2ED5277A00801C03 /* KlipyChatTCAUITests */,
 			);
-			name = KlipySampleTCAUITests;
+			name = KlipyChatTCAUITests;
 			packageProductDependencies = (
 			);
-			productName = KlipySampleTCAUITests;
-			productReference = 7F15CDDB2ED5277A00801C03 /* KlipySampleTCAUITests.xctest */;
+			productName = KlipyChatTCAUITests;
+			productReference = 7F15CDDB2ED5277A00801C03 /* KlipyChatTCAUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -201,7 +204,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 7F15CDBA2ED5277800801C03 /* Build configuration list for PBXProject "KlipySampleTCA" */;
+			buildConfigurationList = 7F15CDBA2ED5277800801C03 /* Build configuration list for PBXProject "KlipyChatTCA" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -220,9 +223,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7F15CDBE2ED5277800801C03 /* KlipySampleTCA */,
-				7F15CDD02ED5277A00801C03 /* KlipySampleTCATests */,
-				7F15CDDA2ED5277A00801C03 /* KlipySampleTCAUITests */,
+				7F15CDBE2ED5277800801C03 /* KlipyChatTCA */,
+				7F15CDD02ED5277A00801C03 /* KlipyChatTCATests */,
+				7F15CDDA2ED5277A00801C03 /* KlipyChatTCAUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -278,12 +281,12 @@
 /* Begin PBXTargetDependency section */
 		7F15CDD32ED5277A00801C03 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 7F15CDBE2ED5277800801C03 /* KlipySampleTCA */;
+			target = 7F15CDBE2ED5277800801C03 /* KlipyChatTCA */;
 			targetProxy = 7F15CDD22ED5277A00801C03 /* PBXContainerItemProxy */;
 		};
 		7F15CDDD2ED5277A00801C03 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 7F15CDBE2ED5277800801C03 /* KlipySampleTCA */;
+			target = 7F15CDBE2ED5277800801C03 /* KlipyChatTCA */;
 			targetProxy = 7F15CDDC2ED5277A00801C03 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -431,7 +434,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipySampleTCA;
+				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipyChatTCA;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -464,7 +467,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipySampleTCA;
+				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipyChatTCA;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -486,7 +489,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipySampleTCATests;
+				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipyChatTCATests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -494,7 +497,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KlipySampleTCA.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KlipySampleTCA";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KlipyChatTCA.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KlipyChatTCA";
 			};
 			name = Debug;
 		};
@@ -508,7 +511,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipySampleTCATests;
+				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipyChatTCATests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -516,7 +519,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KlipySampleTCA.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KlipySampleTCA";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KlipyChatTCA.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KlipyChatTCA";
 			};
 			name = Release;
 		};
@@ -528,7 +531,7 @@
 				DEVELOPMENT_TEAM = SW6JP4596L;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipySampleTCAUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipyChatTCAUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -536,7 +539,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = KlipySampleTCA;
+				TEST_TARGET_NAME = KlipyChatTCA;
 			};
 			name = Debug;
 		};
@@ -548,7 +551,7 @@
 				DEVELOPMENT_TEAM = SW6JP4596L;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipySampleTCAUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = cortlandwalker.com.KlipyChatTCAUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -556,14 +559,14 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = KlipySampleTCA;
+				TEST_TARGET_NAME = KlipyChatTCA;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7F15CDBA2ED5277800801C03 /* Build configuration list for PBXProject "KlipySampleTCA" */ = {
+		7F15CDBA2ED5277800801C03 /* Build configuration list for PBXProject "KlipyChatTCA" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F15CDE32ED5277B00801C03 /* Debug */,
@@ -572,7 +575,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7F15CDE52ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipySampleTCA" */ = {
+		7F15CDE52ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipyChatTCA" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F15CDE62ED5277B00801C03 /* Debug */,
@@ -581,7 +584,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7F15CDE82ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipySampleTCATests" */ = {
+		7F15CDE82ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipyChatTCATests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F15CDE92ED5277B00801C03 /* Debug */,
@@ -590,7 +593,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7F15CDEB2ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipySampleTCAUITests" */ = {
+		7F15CDEB2ED5277B00801C03 /* Build configuration list for PBXNativeTarget "KlipyChatTCAUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F15CDEC2ED5277B00801C03 /* Debug */,
@@ -628,6 +631,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		45A8BFA1B1944CF6951846CC /* KlipyTray */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KlipyTray;
+		};
 		7F15CE112ED54A0E00801C03 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 7F15CE102ED54A0E00801C03 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
