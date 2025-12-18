@@ -8,6 +8,9 @@
       location = "group:Examples/KlipyChatTCA/KlipyChatTCA.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:Examples/KlipyChatUIKit/KlipyChatUIKit.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:Package.swift">
    </FileRef>
 </Workspace>
