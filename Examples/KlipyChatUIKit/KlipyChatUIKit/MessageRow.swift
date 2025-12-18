@@ -84,7 +84,7 @@ final class MessageCell: UITableViewCell {
 
   private let bubble = UIView()
   private let label = UILabel()
-  private let mediaImageView = UIImageView()
+  private let mediaView = SDAnimatedImageView()   // ✅ animated
 
   private var leading: NSLayoutConstraint!
   private var trailing: NSLayoutConstraint!
@@ -104,11 +104,15 @@ final class MessageCell: UITableViewCell {
     label.translatesAutoresizingMaskIntoConstraints = false
     bubble.addSubview(label)
 
-    mediaImageView.clipsToBounds = true
-    mediaImageView.contentMode = .scaleAspectFill
-    mediaImageView.layer.cornerRadius = 16
-    mediaImageView.translatesAutoresizingMaskIntoConstraints = false
-    bubble.addSubview(mediaImageView)
+    // SDAnimatedImageView setup
+    mediaView.clipsToBounds = true
+    mediaView.contentMode = .scaleAspectFill
+    mediaView.layer.cornerRadius = 16
+    mediaView.translatesAutoresizingMaskIntoConstraints = false
+    mediaView.autoPlayAnimatedImage = true
+    mediaView.clearBufferWhenStopped = true
+    mediaView.backgroundColor = .secondarySystemBackground
+    bubble.addSubview(mediaView)
 
     leading = bubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12)
     trailing = bubble.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12)
@@ -125,26 +129,30 @@ final class MessageCell: UITableViewCell {
       label.trailingAnchor.constraint(equalTo: bubble.trailingAnchor, constant: -12),
       label.bottomAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -10),
 
-      mediaImageView.topAnchor.constraint(equalTo: bubble.topAnchor, constant: 10),
-      mediaImageView.leadingAnchor.constraint(equalTo: bubble.leadingAnchor, constant: 10),
-      mediaImageView.trailingAnchor.constraint(equalTo: bubble.trailingAnchor, constant: -10),
-      mediaImageView.bottomAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -10),
-      mediaImageView.heightAnchor.constraint(equalToConstant: 160),
+      mediaView.topAnchor.constraint(equalTo: bubble.topAnchor, constant: 10),
+      mediaView.leadingAnchor.constraint(equalTo: bubble.leadingAnchor, constant: 10),
+      mediaView.trailingAnchor.constraint(equalTo: bubble.trailingAnchor, constant: -10),
+      mediaView.bottomAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -10),
+      mediaView.heightAnchor.constraint(equalToConstant: 180),
     ])
 
-    mediaImageView.isHidden = true
+    mediaView.isHidden = true
   }
 
   required init?(coder: NSCoder) { fatalError() }
 
   override func prepareForReuse() {
     super.prepareForReuse()
-    mediaImageView.sd_cancelCurrentImageLoad()
-    mediaImageView.image = nil
     label.text = nil
+    mediaView.sd_cancelCurrentImageLoad()
+    mediaView.image = nil
+    mediaView.stopAnimating()
+    mediaView.isHidden = true
+    label.isHidden = false
   }
 
   func configure(message: ChatMessage) {
+    // alignment
     if message.isMe {
       leading.isActive = false
       trailing.isActive = true
@@ -155,7 +163,7 @@ final class MessageCell: UITableViewCell {
 
     switch message.kind {
     case let .text(text):
-      mediaImageView.isHidden = true
+      mediaView.isHidden = true
       label.isHidden = false
       label.text = text
       bubble.backgroundColor = message.isMe ? UIColor.systemBlue : UIColor.secondarySystemBackground
@@ -163,13 +171,16 @@ final class MessageCell: UITableViewCell {
 
     case let .media(media):
       label.isHidden = true
-      mediaImageView.isHidden = false
-      bubble.backgroundColor = message.isMe ? UIColor.systemBlue.withAlphaComponent(0.12) : UIColor.secondarySystemBackground
+      mediaView.isHidden = false
+      bubble.backgroundColor = message.isMe
+        ? UIColor.systemBlue.withAlphaComponent(0.12)
+        : UIColor.secondarySystemBackground
 
-      if let url = media.previewURL {
-        mediaImageView.sd_setImage(with: url)
+      let url = media.gifURL ?? media.previewURL
+      if let url {
+        mediaView.sd_setImage(with: url)
       } else {
-        mediaImageView.image = nil
+        mediaView.image = nil
       }
     }
   }
