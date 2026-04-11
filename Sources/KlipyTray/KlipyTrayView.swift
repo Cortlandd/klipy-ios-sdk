@@ -303,7 +303,7 @@ struct KlipyTrayView_Previews: PreviewProvider {
             KlipyTrayView(
                 client: client,
                 config: .init(
-                    mediaTabs: [.gifs, .stickers, .clips, .memes],
+                    mediaTabs: [.gifs, .stickers, .clips, .memes, .emojis],
                     initialTab: .gifs,
                     columns: 3,
                     showTrending: true,

@@ -2,7 +2,7 @@
 
 ![](Logos/logo.png)
 
-An unofficial Swift Package for integrating Klipy GIFs, stickers, clips, and memes into iOS apps.
+An unofficial Swift Package for integrating Klipy GIFs, stickers, clips, memes, and AI emojis into iOS apps.
 
 This repository is not affiliated with, endorsed by, or owned by Klipy.
 

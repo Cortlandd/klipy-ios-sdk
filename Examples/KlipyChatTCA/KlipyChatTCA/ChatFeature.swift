@@ -25,7 +25,7 @@ public struct ChatFeature {
         public var isTrayPresented: Bool = false
 
         public var trayConfig: KlipyTrayConfig = .init(
-            mediaTabs: [.gifs, .stickers, .clips, .memes],
+            mediaTabs: [.gifs, .stickers, .clips, .memes, .emojis],
             initialTab: .gifs,
             columns: 3,
             showTrending: true,

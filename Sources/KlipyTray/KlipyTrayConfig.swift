@@ -12,7 +12,7 @@ import KlipyUI
 ///
 /// Mirrors the Android tray config so the behavior is predictable across platforms.
 public struct KlipyTrayConfig: Equatable, Sendable {
-    /// Tabs to show (GIF / Stickers / Clips / Memes).
+    /// Tabs to show (GIF / Stickers / Clips / Memes / Emojis).
     public var mediaTabs: [KlipyPickerMediaTab]
 
     /// The initial tab to select.
@@ -37,7 +37,7 @@ public struct KlipyTrayConfig: Equatable, Sendable {
     public var brandURL: URL? = URL(string: "https://klipy.com")
 
     public init(
-        mediaTabs: [KlipyPickerMediaTab] = [.gifs, .stickers, .clips, .memes],
+        mediaTabs: [KlipyPickerMediaTab] = [.gifs, .stickers, .clips, .memes, .emojis],
         initialTab: KlipyPickerMediaTab = .gifs,
         columns: Int = 3,
         showTrending: Bool = true,
