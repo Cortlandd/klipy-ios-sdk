@@ -62,8 +62,9 @@ public final class KlipyPickerViewModel: ObservableObject {
     }
 
     public func didChangeTab(_ tab: KlipyPickerMediaTab) {
-        guard selectedTab != tab else { return }
+        debouncedSearchTask?.cancel()
         selectedTab = tab
+        query = ""
         loadInitial()
     }
 

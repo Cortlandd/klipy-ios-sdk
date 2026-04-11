@@ -163,6 +163,41 @@ final class KlipyPickerViewModelTests: XCTestCase {
         XCTAssertEqual(calls, [.trending(kind: .emoji, page: 1, perPage: 24, locale: "en-US")])
     }
 
+    func testChangingTabsClearsQueryAndLoadsTrendingForTheNewMediaType() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(
+                data: [KlipyMedia(id: "5", slug: "clip-party", type: .clip, title: "Clip Party")],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            ),
+            searchResult: .init(
+                data: [KlipyMedia(id: "6", slug: "search-result", type: .gif, title: "Search Result")],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            )
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            initialTab: .gifs,
+            locale: "en-US",
+            searchDebounceNanoseconds: 10_000_000
+        )
+
+        viewModel.updateQuery("party")
+        viewModel.didChangeTab(.clips)
+        await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
+
+        XCTAssertEqual(viewModel.selectedTab, .clips)
+        XCTAssertEqual(viewModel.query, "")
+        XCTAssertEqual(viewModel.items.first?.type, .clip)
+
+        let calls = await loader.calls
+        XCTAssertEqual(calls, [.trending(kind: .clip, page: 1, perPage: 24, locale: "en-US")])
+    }
+
     private func waitUntil(
         timeoutNanoseconds: UInt64 = 1_000_000_000,
         condition: @escaping @MainActor () -> Bool

@@ -111,15 +111,15 @@ public struct KlipyPickerView: View {
     // MARK: - Tabs
 
     private var tabSelector: some View {
-        Picker("Type", selection: $viewModel.selectedTab) {
+        Picker("Type", selection: Binding(
+            get: { viewModel.selectedTab },
+            set: { viewModel.didChangeTab($0) }
+        )) {
             ForEach(KlipyPickerMediaTab.allCases, id: \.self) { tab in
                 Text(tab.title).tag(tab)
             }
         }
         .pickerStyle(.segmented)
-        .onChange(of: viewModel.selectedTab) { newValue in
-            viewModel.didChangeTab(newValue)
-        }
     }
 
     // MARK: - Search
