@@ -143,6 +143,7 @@ struct ChatView: View {
 ```
 
 `KlipyPickerConfig` controls which tabs are shown, how many columns are used, and which empty-query feed the picker uses. If `initialTab` is not included in `mediaTabs`, the picker falls back to the first available tab. If both `showTrending` and `showRecents` are `false`, the picker waits for a search before loading results.
+If the device is offline and the picker has no loaded content yet, it automatically shows a retryable offline state instead of the generic error view.
 
 ### Tray integration
 
@@ -160,6 +161,8 @@ struct ComposerTrayHost: View {
     }
 }
 ```
+
+`KlipyTrayView` uses the same retryable offline state when the tray cannot reach Klipy and does not have any loaded media yet.
 
 ## Screenshots
 
