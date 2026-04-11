@@ -43,7 +43,8 @@ public struct KlipyTrayConfig: Equatable, Sendable {
         showTrending: Bool = true,
         showRecents: Bool = false,
         showCategories: Bool = false,
-        showSearch: Bool = true
+        showSearch: Bool = true,
+        brandURL: URL? = URL(string: "https://klipy.com")
     ) {
         self.mediaTabs = mediaTabs
         self.initialTab = initialTab
@@ -52,6 +53,7 @@ public struct KlipyTrayConfig: Equatable, Sendable {
         self.showRecents = showRecents
         self.showCategories = showCategories
         self.showSearch = showSearch
+        self.brandURL = brandURL
     }
 
     /// Feed to use when the search query is empty.

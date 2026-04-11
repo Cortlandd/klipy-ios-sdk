@@ -27,7 +27,7 @@ public final class KlipyTrayAccessoryView: UIView {
     ) {
         self.height = height
 
-        let store = Store(initialState: KlipyTrayFeature.State()) {
+        let store = Store(initialState: KlipyTrayFeature.State(config: config)) {
             KlipyTrayFeature(client: client)
         }
 

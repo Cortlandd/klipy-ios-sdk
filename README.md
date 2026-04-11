@@ -12,9 +12,8 @@ The production-ready surfaces in this repo today are:
 - `KlipyCore`, which provides the typed async client, models, pagination, categories, item lookup, recent/share/report flows, and stable `customer_id` handling.
 - `KlipyUI`, which provides a callback-based SwiftUI picker with tabs, search, previews, and infinite scrolling.
 
-`KlipyTray` is also included as an optional tray-style surface for chat and composer flows, but it depends on The Composable Architecture and should be validated against your Xcode and dependency toolchain before release.
-
-For app rollout, the remaining recommended release check is to run the live integration flows with your own Klipy API key and confirm the exact endpoint and content behavior you want in your environment.
+`KlipyTray` is also included as an optional tray-style surface for chat and composer flows, built on top of The Composable Architecture for teams already using that stack.
+The main remaining release check is to run the live integration flows with your own Klipy API key and confirm the exact endpoint and content behavior you want in your environment.
 
 ## Products
 
@@ -29,7 +28,7 @@ For app rollout, the remaining recommended release check is to run the live inte
 
 ## Requirements
 
-- iOS 15+
+- iOS 16+
 - Swift Concurrency (`async` / `await`)
 - Swift Package Manager or Xcode package integration
 

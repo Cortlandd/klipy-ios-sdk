@@ -235,7 +235,7 @@ public struct KlipyTrayView: View {
     private var poweredByBar: some View {
         VStack(spacing: 0) {
             Button {
-                if let url = URL(string: "https://klipy.com/en-US") {
+                if let url = store.config.brandURL {
                     openURL(url)
                 }
             } label: {
@@ -293,9 +293,7 @@ private struct KlipyTrayCell: View {
 
 #if DEBUG
 import SwiftUI
-import ComposableArchitecture
 import KlipyCore
-import KlipyTray
 
 struct KlipyTrayView_Previews: PreviewProvider {
     static var previews: some View {

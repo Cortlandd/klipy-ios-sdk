@@ -25,7 +25,11 @@ public struct KlipyTrayFeature: Sendable {
         self.client = client
     }
 
-    private let client: KlipyClient
+    let client: any KlipyTrayLoading
+
+    init(client: any KlipyTrayLoading) {
+        self.client = client
+    }
 
     // MARK: - State
 
@@ -127,12 +131,13 @@ public struct KlipyTrayFeature: Sendable {
                 state.errorMessage = nil
 
                 let kind = tab.mediaType
+                let locale = client.configuration.defaultLocale
 
                 let categoriesEffect: Effect<Action> =
                     state.config.showCategories
                     ? .run { [client] send in
                         do {
-                            let cats = try await client.categories(kind: kind)
+                            let cats = try await client.categories(kind: kind, locale: locale)
                             await send(._loadedCategories(cats))
                         } catch {
                             await send(._failed(error.localizedDescription.isEmpty ? "Failed to load categories." : error.localizedDescription))
@@ -179,16 +184,15 @@ public struct KlipyTrayFeature: Sendable {
                 .cancellable(id: CancelID.fetch, cancelInFlight: true)
 
             case let .searchInputChanged(raw):
-                state.searchInput = raw
+                let query = raw
                     .replacingOccurrences(of: "\n", with: "")
                     .trimmingCharacters(in: .whitespacesAndNewlines)
-                return .none
-                
-                let query = raw.trimmingCharacters(in: .whitespacesAndNewlines)
                 state.searchInput = query
 
                 guard state.config.showSearch else { return .none }
                 guard let tab = state.chosenTab ?? state.mediaTabs.first else { return .none }
+                guard query.isEmpty else { return .none }
+                guard state.lastSearchedInput != nil else { return .none }
 
                 state.mediaItems = []
                 state.currentPage = 1
@@ -196,16 +200,9 @@ public struct KlipyTrayFeature: Sendable {
                 state.isFetchingNextPage = false
                 state.isLoading = true
                 state.errorMessage = nil
-
-                if query.isEmpty {
-                    state.lastSearchedInput = nil
-                    return fetch(reset: true, tab: tab, query: "", chosenCategory: state.chosenCategory, page: 1, config: state.config)
-                        .cancellable(id: CancelID.fetch, cancelInFlight: true)
-                } else {
-                    state.lastSearchedInput = query
-                    return fetch(reset: true, tab: tab, query: query, chosenCategory: state.chosenCategory, page: 1, config: state.config)
-                        .cancellable(id: CancelID.fetch, cancelInFlight: true)
-                }
+                state.lastSearchedInput = nil
+                return fetch(reset: true, tab: tab, query: "", chosenCategory: state.chosenCategory, page: 1, config: state.config)
+                    .cancellable(id: CancelID.fetch, cancelInFlight: true)
             case .searchSubmitted:
               guard state.config.showSearch else { return .none }
               guard let tab = state.chosenTab ?? state.mediaTabs.first else { return .none }
@@ -319,6 +316,7 @@ public struct KlipyTrayFeature: Sendable {
             do {
                 let kind = tab.mediaType
                 let perPage = client.configuration.defaultPerPage
+                let locale = client.configuration.defaultLocale
                 let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
                 let categoryFilter = chosenCategory?.category.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
                 let filter = !categoryFilter.isEmpty ? categoryFilter : trimmedQuery
@@ -335,21 +333,21 @@ public struct KlipyTrayFeature: Sendable {
                     // empty -> trending/recent
                     switch config.emptyQueryFeed {
                     case .trending:
-                        result = try await client.trending(kind: kind, page: page, perPage: perPage)
+                        result = try await client.trending(kind: kind, page: page, perPage: perPage, locale: locale)
                     case .recent:
-                        result = try await client.recent(kind: kind, page: page, perPage: perPage)
+                        result = try await client.recent(kind: kind, page: page, perPage: perPage, locale: locale, adParams: nil)
                     case .none:
                         result = KlipyPage(data: [], currentPage: 1, perPage: (perPage ?? 24), hasNext: false)
                     }
                 } else {
                     // If the chip is literally "trending" or "recent", route to those endpoints
                     if filter.caseInsensitiveCompare("trending") == .orderedSame {
-                        result = try await client.trending(kind: kind, page: page, perPage: perPage)
+                        result = try await client.trending(kind: kind, page: page, perPage: perPage, locale: locale)
                     } else if filter.caseInsensitiveCompare("recent") == .orderedSame {
-                        result = try await client.recent(kind: kind, page: page, perPage: perPage)
+                        result = try await client.recent(kind: kind, page: page, perPage: perPage, locale: locale, adParams: nil)
                     } else {
                         // Otherwise: search using the chip string or typed query
-                        result = try await client.search(kind: kind, query: filter, page: page, perPage: perPage)
+                        result = try await client.search(kind: kind, query: filter, page: page, perPage: perPage, locale: locale)
                     }
                 }
 
@@ -360,4 +358,3 @@ public struct KlipyTrayFeature: Sendable {
         }
     }
 }
-
