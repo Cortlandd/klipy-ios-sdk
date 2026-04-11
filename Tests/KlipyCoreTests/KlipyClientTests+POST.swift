@@ -62,6 +62,8 @@ final class KlipyClientPostTests: XCTestCase {
             httpBodyType: [String: String].self
         ) { request, body in
             XCTAssertEqual(request.httpMethod, "POST")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/json")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
             XCTAssertEqual(body!["customer_id"], self.customerId)
             XCTAssertEqual(body!["q"], query)
         }
@@ -106,6 +108,7 @@ final class KlipyClientPostTests: XCTestCase {
         ) { request, _ in
             XCTAssertEqual(request.httpMethod, "DELETE")
             XCTAssertEqual(request.url, url)
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/json")
         }
 
         let requestExpectation = expectationForRequestingMock(&mock)

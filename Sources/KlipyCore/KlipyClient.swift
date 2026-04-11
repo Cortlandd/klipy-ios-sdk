@@ -69,6 +69,10 @@ private extension KlipyClient {
         var req = URLRequest(url: url)
         req.httpMethod = method
         req.httpBody = body
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+        if body != nil {
+            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
 
         do {
             let (data, response) = try await urlSession.data(for: req)
@@ -85,6 +89,8 @@ private extension KlipyClient {
             } catch {
                 throw KlipyError.decodingError(underlying: error)
             }
+        } catch let error as KlipyError {
+            throw error
         } catch {
             throw KlipyError.transportError(underlying: error)
         }
@@ -117,7 +123,6 @@ public extension KlipyClient {
             pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, "trending"],
             queryItems: params
         )
-        print("Data: \(envelope.data)")
         return envelope.data
     }
 
@@ -184,7 +189,7 @@ public extension KlipyClient {
     func items(
         kind: KlipyMediaType,
         ids: String?,
-        slugs: String?,
+        slugs: String?
     ) async throws -> [KlipyMedia] {
         var params: [String: String] = [:]
 
@@ -207,6 +212,27 @@ public extension KlipyClient {
         )
 
         return envelope.data.data
+    }
+
+    /// Items API using a strongly typed selector for IDs or slugs.
+    func items(
+        kind: KlipyMediaType,
+        selector: KlipyItemsSelector
+    ) async throws -> [KlipyMedia] {
+        switch selector {
+        case .ids(let ids):
+            return try await items(
+                kind: kind,
+                ids: ids.joined(separator: ","),
+                slugs: nil
+            )
+        case .slugs(let slugs):
+            return try await items(
+                kind: kind,
+                ids: nil,
+                slugs: slugs.joined(separator: ",")
+            )
+        }
     }
 
     /// Single item by slug/ID.

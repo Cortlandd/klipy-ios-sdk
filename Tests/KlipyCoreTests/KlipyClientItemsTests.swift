@@ -75,4 +75,25 @@ final class KlipyClientItemsTests: XCTestCase {
             XCTFail("Unexpected error type: \(error)")
         }
     }
+
+    func testItemsSelectorThrowsWhenIdsArrayIsEmpty() async {
+        let client = makeDummyClient()
+
+        do {
+            _ = try await client.items(kind: .gif, selector: .ids([]))
+            XCTFail("Expected empty ids selector to fail validation")
+        } catch let error as KlipyError {
+            guard case .invalidParameters(let message) = error else {
+                XCTFail("Expected KlipyError.invalidParameters, got \(error)")
+                return
+            }
+
+            XCTAssertTrue(
+                message.lowercased().contains("either ids or slugs"),
+                "Unexpected invalidParameters message: \(message)"
+            )
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
+    }
 }
