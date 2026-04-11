@@ -50,7 +50,7 @@ https://github.com/Cortlandd/klipy-ios-sdk.git
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Cortlandd/klipy-ios-sdk.git", from: "1.0.0")
+    .package(url: "https://github.com/Cortlandd/klipy-ios-sdk.git", from: "1.1.0")
 ],
 targets: [
     .target(
