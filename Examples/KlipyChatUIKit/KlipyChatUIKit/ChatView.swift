@@ -56,7 +56,7 @@ final class ChatViewController: UIViewController {
     guard !apiKey.isEmpty else {
       let alert = UIAlertController(
         title: "Missing API Key",
-        message: "Set KlipyChatUIKitConfig.apiKey before testing the tray.",
+        message: KlipyChatUIKitConfig.setupInstructions,
         preferredStyle: .alert
       )
       alert.addAction(UIAlertAction(title: "OK", style: .default))

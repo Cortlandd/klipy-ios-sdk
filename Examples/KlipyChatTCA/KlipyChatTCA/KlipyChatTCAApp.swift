@@ -16,7 +16,7 @@ struct KlipyChatTCAApp: App {
             ChatView(
                 store: Store(
                     initialState: ChatFeature.State(
-                        apiKey: "wx4NS4jKDijkRGIrNvsuSRAzCm2ZQYVfBIHUU951ZPOHRBDD8OQkoNqjO16UgW1W"
+                        apiKey: KlipyChatTCAConfig.apiKey
                     )
                 ) {
                     ChatFeature()
@@ -24,4 +24,23 @@ struct KlipyChatTCAApp: App {
             )
         }
     }
+}
+
+private enum KlipyChatTCAConfig {
+    static let apiKey: String = {
+        if let environmentValue = ProcessInfo.processInfo.environment["KLIPY_API_KEY"]?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !environmentValue.isEmpty {
+            return environmentValue
+        }
+
+        if let infoValue = Bundle.main.object(forInfoDictionaryKey: "KLIPY_API_KEY") as? String {
+            let trimmed = infoValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                return trimmed
+            }
+        }
+
+        return ""
+    }()
 }

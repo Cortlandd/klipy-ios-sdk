@@ -24,6 +24,15 @@ public struct ChatView: View {
 
             Divider()
 
+            if !isAPIKeyConfigured {
+                Text("Set KLIPY_API_KEY in the scheme environment or the app's KLIPY_API_KEY Info.plist value to enable the tray.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+            }
+
             composer
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
@@ -82,6 +91,8 @@ public struct ChatView: View {
                     .font(.system(size: 26, weight: .semibold))
             }
             .buttonStyle(.plain)
+            .disabled(!isAPIKeyConfigured)
+            .opacity(isAPIKeyConfigured ? 1.0 : 0.4)
 
             TextField("iMessage", text: $store.draftText)
                 .textInputAutocapitalization(.sentences)
@@ -103,5 +114,9 @@ public struct ChatView: View {
             .disabled(store.draftText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .opacity(store.draftText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.4 : 1.0)
         }
+    }
+
+    private var isAPIKeyConfigured: Bool {
+        !store.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }

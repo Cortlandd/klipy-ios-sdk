@@ -13,10 +13,6 @@ import KlipyUI
 struct KlipyAppView: View {
     @Bindable var store: StoreOf<KlipyAppFeature>
 
-    private let client = KlipyClient(
-        configuration: KlipyConfiguration(apiKey: "wx4NS4jKDijkRGIrNvsuSRAzCm2ZQYVfBIHUU951ZPOHRBDD8OQkoNqjO16UgW1W")
-    )
-
     var body: some View {
         NavigationView {
             WithPerceptionTracking {
@@ -34,6 +30,15 @@ struct KlipyAppView: View {
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }
+                    .disabled(!isAPIKeyConfigured)
+                    .opacity(isAPIKeyConfigured ? 1.0 : 0.4)
+
+                    if !isAPIKeyConfigured {
+                        Text("Set KLIPY_API_KEY in the scheme environment or the app's KLIPY_API_KEY Info.plist value before opening the picker.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
 
                     Spacer()
                 }
@@ -42,12 +47,26 @@ struct KlipyAppView: View {
                 .sheet(item: $store.scope(state: \.destination, action: \.destination)) { destStore in
                     switch destStore.case {
                     case let .picker(pickerStore):
-                        KlipyPickerSheet(store: pickerStore, client: client)
-                            .ignoresSafeArea(edges: .bottom)
+                        if let client {
+                            KlipyPickerSheet(store: pickerStore, client: client)
+                                .ignoresSafeArea(edges: .bottom)
+                        }
                     }
                 }
             }
         }
+    }
+
+    private var client: KlipyClient? {
+        guard isAPIKeyConfigured else {
+            return nil
+        }
+
+        return KlipyClient(configuration: .init(apiKey: KlipySampleTCAConfig.apiKey))
+    }
+
+    private var isAPIKeyConfigured: Bool {
+        !KlipySampleTCAConfig.apiKey.isEmpty
     }
 
     @ViewBuilder
@@ -79,4 +98,23 @@ struct KlipyAppView: View {
             }
         }
     }
+}
+
+private enum KlipySampleTCAConfig {
+    static let apiKey: String = {
+        if let environmentValue = ProcessInfo.processInfo.environment["KLIPY_API_KEY"]?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !environmentValue.isEmpty {
+            return environmentValue
+        }
+
+        if let infoValue = Bundle.main.object(forInfoDictionaryKey: "KLIPY_API_KEY") as? String {
+            let trimmed = infoValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                return trimmed
+            }
+        }
+
+        return ""
+    }()
 }
