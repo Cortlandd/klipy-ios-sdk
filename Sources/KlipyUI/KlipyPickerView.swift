@@ -21,6 +21,7 @@ public struct KlipyPickerView: View {
 
     public init(
         client: KlipyClient,
+        availableTabs: [KlipyPickerMediaTab] = KlipyPickerMediaTab.allCases,
         initialTab: KlipyPickerMediaTab = .gifs,
         onSelect: @escaping (KlipyMedia) -> Void,
         onClose: (() -> Void)? = nil
@@ -28,6 +29,7 @@ public struct KlipyPickerView: View {
         _viewModel = StateObject(
             wrappedValue: KlipyPickerViewModel(
                 client: client,
+                availableTabs: availableTabs,
                 initialTab: initialTab
             )
         )
@@ -115,7 +117,7 @@ public struct KlipyPickerView: View {
             get: { viewModel.selectedTab },
             set: { viewModel.didChangeTab($0) }
         )) {
-            ForEach(KlipyPickerMediaTab.allCases, id: \.self) { tab in
+            ForEach(viewModel.availableTabs, id: \.self) { tab in
                 Text(tab.title).tag(tab)
             }
         }

@@ -15,6 +15,7 @@ public final class KlipyPickerViewModel: ObservableObject {
     @Published public private(set) var isLoading: Bool = false
     @Published public private(set) var lastError: KlipyError?
 
+    public let availableTabs: [KlipyPickerMediaTab]
     @Published public var selectedTab: KlipyPickerMediaTab
     @Published public var query: String = ""
 
@@ -32,13 +33,16 @@ public final class KlipyPickerViewModel: ObservableObject {
 
     public init(
         client: any KlipyMediaLoading,
+        availableTabs: [KlipyPickerMediaTab] = KlipyPickerMediaTab.allCases,
         initialTab: KlipyPickerMediaTab = .gifs,
         locale: String = Locale.autoupdatingCurrent.identifier,
         perPage: Int = 24,
         searchDebounceNanoseconds: UInt64 = 350_000_000
     ) {
         self.client = client
-        self.selectedTab = initialTab
+        let resolvedTabs = availableTabs.isEmpty ? KlipyPickerMediaTab.allCases : availableTabs
+        self.availableTabs = resolvedTabs
+        self.selectedTab = resolvedTabs.contains(initialTab) ? initialTab : resolvedTabs[0]
         self.locale = locale
         self.perPage = perPage
         self.searchDebounceNanoseconds = searchDebounceNanoseconds
@@ -62,6 +66,7 @@ public final class KlipyPickerViewModel: ObservableObject {
     }
 
     public func didChangeTab(_ tab: KlipyPickerMediaTab) {
+        guard availableTabs.contains(tab) else { return }
         debouncedSearchTask?.cancel()
         selectedTab = tab
         query = ""

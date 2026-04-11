@@ -198,6 +198,64 @@ final class KlipyPickerViewModelTests: XCTestCase {
         XCTAssertEqual(calls, [.trending(kind: .clip, page: 1, perPage: 24, locale: "en-US")])
     }
 
+    func testInitialTabFallsBackToTheFirstAvailableTab() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(
+                data: [KlipyMedia(id: "7", slug: "sticker-party", type: .sticker, title: "Sticker Party")],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            ),
+            searchResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false)
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            availableTabs: [.stickers, .clips],
+            initialTab: .gifs,
+            locale: "en-US",
+            searchDebounceNanoseconds: 10_000_000
+        )
+
+        viewModel.loadInitial()
+        await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
+
+        XCTAssertEqual(viewModel.availableTabs, [.stickers, .clips])
+        XCTAssertEqual(viewModel.selectedTab, .stickers)
+        XCTAssertEqual(viewModel.items.first?.type, .sticker)
+
+        let calls = await loader.calls
+        XCTAssertEqual(calls, [.trending(kind: .sticker, page: 1, perPage: 24, locale: "en-US")])
+    }
+
+    func testUnavailableTabsAreIgnored() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(
+                data: [KlipyMedia(id: "8", slug: "wave", type: .gif, title: "Wave")],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            ),
+            searchResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false)
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            availableTabs: [.gifs, .stickers],
+            initialTab: .gifs,
+            locale: "en-US",
+            searchDebounceNanoseconds: 10_000_000
+        )
+
+        viewModel.didChangeTab(.clips)
+        await waitUntil { !viewModel.isLoading }
+
+        XCTAssertEqual(viewModel.selectedTab, .gifs)
+
+        let calls = await loader.calls
+        XCTAssertEqual(calls, [])
+    }
+
     private func waitUntil(
         timeoutNanoseconds: UInt64 = 1_000_000_000,
         condition: @escaping @MainActor () -> Bool
