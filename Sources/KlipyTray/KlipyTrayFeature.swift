@@ -10,7 +10,7 @@ import KlipyCore
 import KlipyUI
 import ComposableArchitecture
 
-/// TCA-powered tray feature, modeled after the Android tray reducer.
+/// TCA-powered tray feature for managing the keyboard-style Klipy tray.
 ///
 /// Responsibilities:
 /// - Manage tray state (selected tab, query, paging, optional categories).
@@ -209,7 +209,7 @@ public struct KlipyTrayFeature: Sendable {
 
               let query = state.searchInput.trimmingCharacters(in: .whitespacesAndNewlines)
 
-              // Match Android-ish behavior: submitting search clears category selection
+              // Submitting search clears category selection so chips do not fight with text search.
               // (optional, but recommended so chips don't fight with text search)
               state.chosenCategory = nil
 

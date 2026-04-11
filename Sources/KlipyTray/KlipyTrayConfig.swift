@@ -9,8 +9,6 @@ import Foundation
 import KlipyUI
 
 /// Configuration for the Klipy Tray (keyboard-like panel).
-///
-/// Mirrors the Android tray config so the behavior is predictable across platforms.
 public struct KlipyTrayConfig: Equatable, Sendable {
     /// Tabs to show (GIF / Stickers / Clips / Memes / Emojis).
     public var mediaTabs: [KlipyPickerMediaTab]

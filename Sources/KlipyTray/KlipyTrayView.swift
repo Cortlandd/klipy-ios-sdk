@@ -11,7 +11,7 @@ import KlipyUI
 import SDWebImageSwiftUI
 import ComposableArchitecture
 
-/// A keyboard-friendly Klipy tray, modeled after the Android tray:
+/// A keyboard-friendly Klipy tray that supports:
 /// - Search bar pinned to top
 /// - Media-type tabs pinned under search
 /// - Full-height scrolling grid beneath

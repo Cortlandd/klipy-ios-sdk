@@ -31,7 +31,7 @@ public struct ChatMessage: Equatable, Identifiable {
 
 public enum ChatSeed {
 
-    /// Seeded “demo chat” conversation like the Android sample.
+    /// Seeded demo chat conversation for the sample app.
     static let sampleConversation: [ChatMessage] = {
         let now = Date()
         func t(_ minutesAgo: Int) -> Date {

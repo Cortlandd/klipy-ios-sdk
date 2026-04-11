@@ -12,7 +12,7 @@ import ComposableArchitecture
 
 /// A UIKit `inputAccessoryView` wrapper hosting `KlipyTrayView`.
 ///
-/// This is the iOS equivalent of an Android "tray" panel above the keyboard.
+/// This accessory view presents a tray-style panel above the keyboard.
 public final class KlipyTrayAccessoryView: UIView {
 
     private let hostingController: UIHostingController<KlipyTrayView>

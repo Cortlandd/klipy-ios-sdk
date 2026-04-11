@@ -9,8 +9,8 @@ import Foundation
 
 /// Configuration for `KlipyPickerView`.
 ///
-/// Mirrors the Android picker config so the standalone picker can be shaped
-/// without relying on tray-specific APIs.
+/// Use this to control which tabs are available, how the grid is laid out,
+/// and what the picker should load when the search query is empty.
 public struct KlipyPickerConfig: Equatable, Sendable {
     /// Tabs to show in the picker.
     public var mediaTabs: [KlipyPickerMediaTab]

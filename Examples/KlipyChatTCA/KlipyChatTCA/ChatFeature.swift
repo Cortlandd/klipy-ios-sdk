@@ -107,7 +107,7 @@ public struct ChatFeature {
                 return .send(.simulateReplyAfterSend)
 
             case .simulateReplyAfterSend:
-                // Fake a reply after a short delay so it feels like the Android demo.
+                // Fake a reply after a short delay so the sample chat feels responsive.
                 return .run { send in
                     try await clock.sleep(for: .milliseconds(650))
                     await send(._appendReply(ChatSeed.randomReply()))

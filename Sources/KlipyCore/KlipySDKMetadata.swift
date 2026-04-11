@@ -8,6 +8,6 @@
 import Foundation
 
 enum KlipySDKMetadata {
-    static let version = "1.1.0"
+    static let version = "1.2.0"
     static let userAgent = "klipy-ios-sdk/\(version) (iOS; community SDK)"
 }
