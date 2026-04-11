@@ -10,11 +10,19 @@ import SDWebImage
 import SDWebImageWebPCoder
 
 public enum KlipyUIBootstrap {
+    private final class State: @unchecked Sendable {
+        let lock = NSLock()
+        var isConfigured = false
+    }
+
+    private static let state = State()
+
     public static func configureIfNeeded() {
-        // Only register once
-//        struct Token { static var configured = false }
-//        guard !Token.configured else { return }
-//        Token.configured = true
+        state.lock.lock()
+        defer { state.lock.unlock() }
+
+        guard !state.isConfigured else { return }
+        state.isConfigured = true
 
         let webpCoder = SDImageWebPCoder.shared
         SDImageCodersManager.shared.addCoder(webpCoder)

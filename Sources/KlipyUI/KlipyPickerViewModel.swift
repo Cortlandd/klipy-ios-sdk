@@ -18,41 +18,87 @@ public final class KlipyPickerViewModel: ObservableObject {
     @Published public var selectedTab: KlipyPickerMediaTab
     @Published public var query: String = ""
 
-    private let client: KlipyClient
+    private let client: any KlipyMediaLoading
+    private let locale: String
+    private let perPage: Int
+    private let searchDebounceNanoseconds: UInt64
 
     // Pagination state
     private var currentPage: Int = 1
     private var hasNextPage: Bool = true
-    private let perPage: Int = 24
     private var isLoadingMore: Bool = false
+    private var activeLoadTask: Task<Void, Never>?
+    private var debouncedSearchTask: Task<Void, Never>?
 
     public init(
-        client: KlipyClient,
-        initialTab: KlipyPickerMediaTab = .gifs
+        client: any KlipyMediaLoading,
+        initialTab: KlipyPickerMediaTab = .gifs,
+        locale: String = Locale.autoupdatingCurrent.identifier,
+        perPage: Int = 24,
+        searchDebounceNanoseconds: UInt64 = 350_000_000
     ) {
         self.client = client
         self.selectedTab = initialTab
+        self.locale = locale
+        self.perPage = perPage
+        self.searchDebounceNanoseconds = searchDebounceNanoseconds
+    }
+
+    deinit {
+        activeLoadTask?.cancel()
+        debouncedSearchTask?.cancel()
     }
 
     // MARK: - Public API
 
     public func loadInitial() {
+        activeLoadTask?.cancel()
         currentPage = 1
         hasNextPage = true
         items = []
         lastError = nil
 
-        Task {
-            await loadPage(page: 1, reset: true)
-        }
+        loadPage(page: 1, reset: true)
     }
 
     public func didChangeTab(_ tab: KlipyPickerMediaTab) {
+        guard selectedTab != tab else { return }
         selectedTab = tab
         loadInitial()
     }
 
+    public func updateQuery(_ value: String) {
+        query = value
+        debouncedSearchTask?.cancel()
+
+        let trimmedQuery = value.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        debouncedSearchTask = Task { [weak self] in
+            guard let self else { return }
+
+            if trimmedQuery.isEmpty {
+                await MainActor.run {
+                    self.loadInitial()
+                }
+                return
+            }
+
+            do {
+                try await Task.sleep(nanoseconds: searchDebounceNanoseconds)
+            } catch {
+                return
+            }
+
+            guard !Task.isCancelled else { return }
+
+            await MainActor.run {
+                self.loadInitial()
+            }
+        }
+    }
+
     public func submitSearch() {
+        debouncedSearchTask?.cancel()
         loadInitial()
     }
 
@@ -69,53 +115,58 @@ public final class KlipyPickerViewModel: ObservableObject {
         let nextPage = currentPage + 1
         isLoadingMore = true
 
-        Task {
-            await loadPage(page: nextPage, reset: false)
-            isLoadingMore = false
-        }
+        loadPage(page: nextPage, reset: false)
     }
 
     // MARK: - Internal page loader
 
-    private func loadPage(page: Int, reset: Bool) async {
+    private func loadPage(page: Int, reset: Bool) {
+        activeLoadTask?.cancel()
         isLoading = true
-        defer { isLoading = false }
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let selectedTab = selectedTab
+        let locale = locale
 
-        do {
-            let kind = selectedTab.mediaType
+        activeLoadTask = Task { [weak self] in
+            guard let self else { return }
 
-            let pageResult: KlipyPage<KlipyMedia>
+            do {
+                let pageResult: KlipyPage<KlipyMedia>
 
-            if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                // trending
-                pageResult = try await client.trending(
-                    kind: kind,
-                    page: page,
-                    perPage: perPage,
-                    locale: "en-US",
-                )
-            } else {
-                // search
-                pageResult = try await client.search(
-                    kind: kind,
-                    query: query,
-                    page: page,
-                    perPage: perPage,
-                    locale: "en-US",
-                )
+                if trimmedQuery.isEmpty {
+                    pageResult = try await client.trending(
+                        kind: selectedTab.mediaType,
+                        page: page,
+                        perPage: perPage,
+                        locale: locale
+                    )
+                } else {
+                    pageResult = try await client.search(
+                        kind: selectedTab.mediaType,
+                        query: trimmedQuery,
+                        page: page,
+                        perPage: perPage,
+                        locale: locale
+                    )
+                }
+
+                guard !Task.isCancelled else { return }
+
+                currentPage = pageResult.currentPage
+                hasNextPage = pageResult.hasNext
+                lastError = nil
+
+                if reset {
+                    items = pageResult.data
+                } else {
+                    items.append(contentsOf: pageResult.data)
+                }
+            } catch {
+                guard !Task.isCancelled else { return }
+                lastError = (error as? KlipyError) ?? .transportError(underlying: error)
             }
-
-            currentPage = pageResult.currentPage
-            hasNextPage = pageResult.hasNext
-
-            if reset {
-                items = pageResult.data
-            } else {
-                items.append(contentsOf: pageResult.data)
-            }
-
-        } catch {
-            lastError = (error as? KlipyError) ?? .transportError(underlying: error)
+            isLoading = false
+            isLoadingMore = false
         }
     }
 }

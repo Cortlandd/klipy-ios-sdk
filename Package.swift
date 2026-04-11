@@ -11,6 +11,10 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
+            name: "KlipySDK",
+            targets: ["KlipyCore", "KlipyUI"]
+        ),
+        .library(
             name: "KlipyCore",
             targets: ["KlipyCore"]
         ),
@@ -55,7 +59,7 @@ let package = Package(
         ),
         .testTarget(
             name: "KlipyCoreTests",
-            dependencies: ["KlipyCore", "Mocker"]
+            dependencies: ["KlipyCore", "KlipyUI", "Mocker"]
         ),
     ]
 )

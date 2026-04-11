@@ -126,7 +126,10 @@ public struct KlipyPickerView: View {
 
     private var searchField: some View {
         HStack {
-            TextField("Search", text: $viewModel.query, onCommit: {
+            TextField("Search", text: Binding(
+                get: { viewModel.query },
+                set: { viewModel.updateQuery($0) }
+            ), onCommit: {
                 viewModel.submitSearch()
             })
             .padding(.horizontal, 10)
@@ -140,8 +143,7 @@ public struct KlipyPickerView: View {
                     Spacer()
                     if !viewModel.query.isEmpty {
                         Button {
-                            viewModel.query = ""
-                            viewModel.loadInitial()
+                            viewModel.updateQuery("")
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.secondary)
@@ -161,7 +163,7 @@ public struct KlipyPickerView: View {
             if viewModel.isLoading && viewModel.items.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let error = viewModel.lastError {
+            } else if let error = viewModel.lastError, viewModel.items.isEmpty {
                 VStack(spacing: 8) {
                     Text("Failed to load Klipy content.")
                         .font(.callout)
