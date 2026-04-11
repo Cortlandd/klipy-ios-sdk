@@ -68,6 +68,15 @@ Most apps can simply:
 import KlipyUI
 ```
 
+## API Key Handling
+
+The SDK needs a Klipy API key, but your integration should still avoid checking a live key into source control.
+
+- For local development and the example apps, set `KLIPY_API_KEY` in **Scheme -> Edit Scheme -> Run -> Arguments -> Environment Variables**.
+- If you prefer build settings, define a `KLIPY_API_KEY` user-defined build setting in your app target or in an untracked local `.xcconfig`. The example apps already map that build setting into the app's `Info.plist`.
+- Create `KlipyConfiguration` or `KlipyClient.live(apiKey:)` at your app's composition boundary, then inject the client where your UI or features need it.
+- Treat a shipped iOS key as an app credential, not a secret. Anything embedded in a client app can be recovered, so use app-specific keys, keep them out of git, and rotate them if they leak or if you need to narrow access.
+
 ## Quick Start
 
 ### Programmatic client

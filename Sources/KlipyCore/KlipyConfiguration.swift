@@ -9,6 +9,8 @@ import Foundation
 
 /// Configuration for the Klipy API client.
 /// Use this to provide your API key and base URL.
+/// Create and inject it from your app's configuration boundary rather than hardcoding
+/// a live key directly in committed source files.
 public struct KlipyConfiguration: Sendable {
     /// Your Klipy API key. This is typically part of the path
     /// for all API requests, e.g. `/api/v1/{API_KEY}/gifs/search`.
