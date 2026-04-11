@@ -19,13 +19,22 @@ private actor MockKlipyMediaLoader: KlipyMediaLoading {
     private(set) var calls: [Call] = []
     var trendingResult: KlipyPage<KlipyMedia>
     var searchResult: KlipyPage<KlipyMedia>
+    var trendingError: Error?
+    var recentError: Error?
+    var searchError: Error?
 
     init(
         trendingResult: KlipyPage<KlipyMedia>,
-        searchResult: KlipyPage<KlipyMedia>
+        searchResult: KlipyPage<KlipyMedia>,
+        trendingError: Error? = nil,
+        recentError: Error? = nil,
+        searchError: Error? = nil
     ) {
         self.trendingResult = trendingResult
         self.searchResult = searchResult
+        self.trendingError = trendingError
+        self.recentError = recentError
+        self.searchError = searchError
     }
 
     func trending(
@@ -35,6 +44,9 @@ private actor MockKlipyMediaLoader: KlipyMediaLoading {
         locale: String?
     ) async throws -> KlipyPage<KlipyMedia> {
         calls.append(.trending(kind: kind, page: page, perPage: perPage, locale: locale))
+        if let trendingError {
+            throw trendingError
+        }
         return trendingResult
     }
 
@@ -46,6 +58,9 @@ private actor MockKlipyMediaLoader: KlipyMediaLoading {
         locale: String?
     ) async throws -> KlipyPage<KlipyMedia> {
         calls.append(.search(kind: kind, query: query, page: page, perPage: perPage, locale: locale))
+        if let searchError {
+            throw searchError
+        }
         return searchResult
     }
 
@@ -57,6 +72,9 @@ private actor MockKlipyMediaLoader: KlipyMediaLoading {
         adParams: [String : String]?
     ) async throws -> KlipyPage<KlipyMedia> {
         calls.append(.recent(kind: kind, page: page, perPage: perPage, locale: locale))
+        if let recentError {
+            throw recentError
+        }
         return trendingResult
     }
 }
@@ -332,6 +350,31 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [])
+    }
+
+    func testOfflineFailuresAreExposedAsConnectivityErrors() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false),
+            searchResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false),
+            trendingError: URLError(.notConnectedToInternet)
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            config: KlipyPickerConfig(initialTab: .gifs),
+            locale: "en-US",
+            searchDebounceNanoseconds: 10_000_000
+        )
+
+        viewModel.loadInitial()
+        await waitUntil { !viewModel.isLoading }
+
+        XCTAssertTrue(viewModel.items.isEmpty)
+        XCTAssertEqual(viewModel.lastError?.isConnectivityError, true)
+        XCTAssertEqual(
+            viewModel.lastError?.description,
+            "No internet connection. Connect to the internet and try again."
+        )
     }
 
     private func waitUntil(

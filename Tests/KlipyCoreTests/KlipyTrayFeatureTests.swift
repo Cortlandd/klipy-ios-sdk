@@ -17,22 +17,37 @@ private struct MockKlipyTrayLoader: KlipyTrayLoading {
     var trendingResult: KlipyPage<KlipyMedia>
     var recentResult: KlipyPage<KlipyMedia>
     var searchResult: KlipyPage<KlipyMedia>
+    var categoriesError: Error?
+    var trendingError: Error?
+    var recentError: Error?
+    var searchError: Error?
 
     init(
         configuration: KlipyConfiguration = .init(apiKey: "demo-key"),
         categoriesResult: [KlipyCategory] = [],
         trendingResult: KlipyPage<KlipyMedia>,
         recentResult: KlipyPage<KlipyMedia>? = nil,
-        searchResult: KlipyPage<KlipyMedia>? = nil
+        searchResult: KlipyPage<KlipyMedia>? = nil,
+        categoriesError: Error? = nil,
+        trendingError: Error? = nil,
+        recentError: Error? = nil,
+        searchError: Error? = nil
     ) {
         self.configuration = configuration
         self.categoriesResult = categoriesResult
         self.trendingResult = trendingResult
         self.recentResult = recentResult ?? trendingResult
         self.searchResult = searchResult ?? trendingResult
+        self.categoriesError = categoriesError
+        self.trendingError = trendingError
+        self.recentError = recentError
+        self.searchError = searchError
     }
 
     func categories(kind: KlipyMediaType, locale: String?) async throws -> [KlipyCategory] {
+        if let categoriesError {
+            throw categoriesError
+        }
         categoriesResult
     }
 
@@ -42,6 +57,9 @@ private struct MockKlipyTrayLoader: KlipyTrayLoading {
         perPage: Int?,
         locale: String?
     ) async throws -> KlipyPage<KlipyMedia> {
+        if let trendingError {
+            throw trendingError
+        }
         trendingResult
     }
 
@@ -52,6 +70,9 @@ private struct MockKlipyTrayLoader: KlipyTrayLoading {
         locale: String?,
         adParams: [String : String]?
     ) async throws -> KlipyPage<KlipyMedia> {
+        if let recentError {
+            throw recentError
+        }
         recentResult
     }
 
@@ -62,6 +83,9 @@ private struct MockKlipyTrayLoader: KlipyTrayLoading {
         perPage: Int?,
         locale: String?
     ) async throws -> KlipyPage<KlipyMedia> {
+        if let searchError {
+            throw searchError
+        }
         searchResult
     }
 }
@@ -160,6 +184,46 @@ final class KlipyTrayFeatureTests: XCTestCase {
             $0.hasNext = false
             $0.isLoading = false
             $0.isFetchingNextPage = false
+        }
+    }
+
+    func testOfflineFailuresSetTheTrayOfflineState() async {
+        let loader = MockKlipyTrayLoader(
+            trendingResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false),
+            trendingError: URLError(.notConnectedToInternet)
+        )
+
+        let store = TestStore(
+            initialState: KlipyTrayFeature.State(
+                config: .init(showCategories: false)
+            )
+        ) {
+            KlipyTrayFeature(client: loader)
+        }
+
+        await store.send(.onAppear) {
+            $0.mediaTabs = KlipyPickerMediaTab.allCases
+            $0.chosenTab = .gifs
+            $0.isLoading = true
+        }
+        await store.receive(.tabSelected(.gifs)) {
+            $0.chosenTab = .gifs
+            $0.mediaItems = []
+            $0.currentPage = 1
+            $0.hasNext = true
+            $0.isFetchingNextPage = false
+            $0.isLoading = true
+            $0.isOffline = false
+            $0.errorMessage = nil
+        }
+        await store.receive(._loadedCategories([])) {
+            $0.categories = []
+        }
+        await store.receive(._failed("No internet connection. Connect to the internet and try again.", isOffline: true)) {
+            $0.isLoading = false
+            $0.isFetchingNextPage = false
+            $0.isOffline = true
+            $0.errorMessage = "No internet connection. Connect to the internet and try again."
         }
     }
 }

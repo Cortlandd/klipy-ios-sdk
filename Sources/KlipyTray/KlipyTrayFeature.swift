@@ -38,6 +38,7 @@ public struct KlipyTrayFeature: Sendable {
         public var config: KlipyTrayConfig
 
         public var isLoading: Bool = false
+        public var isOffline: Bool = false
         public var errorMessage: String? = nil
 
         public var mediaTabs: [KlipyPickerMediaTab] = []
@@ -73,12 +74,13 @@ public struct KlipyTrayFeature: Sendable {
         case loadNextPage
         case searchSubmitted
         case clearSearchTapped
+        case retryTapped
 
         case dismissError
 
         case _loadedCategories([KlipyCategory])
         case _loadedPage(KlipyPage<KlipyMedia>, reset: Bool)
-        case _failed(String)
+        case _failed(String, isOffline: Bool)
     }
 
     private enum CancelID: Hashable {
@@ -104,6 +106,7 @@ public struct KlipyTrayFeature: Sendable {
                 state.mediaTabs = tabs
                 state.chosenTab = initial
                 state.isLoading = true
+                state.isOffline = false
                 state.errorMessage = nil
                 state.categories = []
                 state.chosenCategory = nil
@@ -128,6 +131,7 @@ public struct KlipyTrayFeature: Sendable {
                 state.hasNext = true
                 state.isFetchingNextPage = false
                 state.isLoading = true
+                state.isOffline = false
                 state.errorMessage = nil
 
                 let kind = tab.mediaType
@@ -140,7 +144,8 @@ public struct KlipyTrayFeature: Sendable {
                             let cats = try await client.categories(kind: kind, locale: locale)
                             await send(._loadedCategories(cats))
                         } catch {
-                            await send(._failed(error.localizedDescription.isEmpty ? "Failed to load categories." : error.localizedDescription))
+                            let klipyError = (error as? KlipyError) ?? .transportError(underlying: error)
+                            await send(._failed(klipyError.description, isOffline: klipyError.isConnectivityError))
                             await send(._loadedCategories([]))
                         }
                     }
@@ -171,6 +176,7 @@ public struct KlipyTrayFeature: Sendable {
                 state.hasNext = true
                 state.isFetchingNextPage = false
                 state.isLoading = true
+                state.isOffline = false
                 state.errorMessage = nil
 
                 return fetch(
@@ -199,6 +205,7 @@ public struct KlipyTrayFeature: Sendable {
                 state.hasNext = true
                 state.isFetchingNextPage = false
                 state.isLoading = true
+                state.isOffline = false
                 state.errorMessage = nil
                 state.lastSearchedInput = nil
                 return fetch(reset: true, tab: tab, query: "", chosenCategory: state.chosenCategory, page: 1, config: state.config)
@@ -218,6 +225,7 @@ public struct KlipyTrayFeature: Sendable {
               state.hasNext = true
               state.isFetchingNextPage = false
               state.isLoading = true
+              state.isOffline = false
               state.errorMessage = nil
 
               state.lastSearchedInput = query.isEmpty ? nil : query
@@ -243,6 +251,7 @@ public struct KlipyTrayFeature: Sendable {
               state.hasNext = true
               state.isFetchingNextPage = false
               state.isLoading = true
+              state.isOffline = false
               state.errorMessage = nil
 
               return fetch(
@@ -263,6 +272,29 @@ public struct KlipyTrayFeature: Sendable {
                 let nextPage = state.currentPage + 1
                 return fetch(reset: false, tab: tab, query: state.searchInput, chosenCategory: state.chosenCategory, page: nextPage, config: state.config)
                     .cancellable(id: CancelID.fetch, cancelInFlight: false)
+
+            case .retryTapped:
+                guard let tab = state.chosenTab ?? state.mediaTabs.first else {
+                    return .send(.onAppear)
+                }
+
+                state.mediaItems = []
+                state.currentPage = 1
+                state.hasNext = true
+                state.isFetchingNextPage = false
+                state.isLoading = true
+                state.isOffline = false
+                state.errorMessage = nil
+
+                return fetch(
+                    reset: true,
+                    tab: tab,
+                    query: state.searchInput,
+                    chosenCategory: state.chosenCategory,
+                    page: 1,
+                    config: state.config
+                )
+                .cancellable(id: CancelID.fetch, cancelInFlight: true)
 
             case .dismissError:
                 state.errorMessage = nil
@@ -287,12 +319,15 @@ public struct KlipyTrayFeature: Sendable {
                 state.currentPage = page.currentPage
                 state.hasNext = page.hasNext
                 state.isLoading = false
+                state.isOffline = false
+                state.errorMessage = nil
                 state.isFetchingNextPage = false
                 return .none
 
-            case let ._failed(message):
+            case let ._failed(message, isOffline):
                 state.isLoading = false
                 state.isFetchingNextPage = false
+                state.isOffline = isOffline
                 state.errorMessage = message
                 return .none
 
@@ -353,7 +388,8 @@ public struct KlipyTrayFeature: Sendable {
 
                 await send(._loadedPage(result, reset: reset))
             } catch {
-                await send(._failed(error.localizedDescription.isEmpty ? "Failed to load Klipy content." : error.localizedDescription))
+                let klipyError = (error as? KlipyError) ?? .transportError(underlying: error)
+                await send(._failed(klipyError.description, isOffline: klipyError.isConnectivityError))
             }
         }
     }

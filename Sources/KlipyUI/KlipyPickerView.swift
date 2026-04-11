@@ -182,18 +182,24 @@ public struct KlipyPickerView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error = viewModel.lastError, viewModel.items.isEmpty {
-                VStack(spacing: 8) {
-                    Text("Failed to load Klipy content.")
-                        .font(.callout)
-                    Text(error.description)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                    Button("Retry") {
+                if error.isConnectivityError {
+                    KlipyOfflineStateView {
                         viewModel.loadInitial()
                     }
+                } else {
+                    VStack(spacing: 8) {
+                        Text("Failed to load Klipy content.")
+                            .font(.callout)
+                        Text(error.description)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                        Button("Retry") {
+                            viewModel.loadInitial()
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 scrollGrid
             }

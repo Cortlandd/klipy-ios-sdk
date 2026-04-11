@@ -82,7 +82,7 @@ public struct KlipyTrayView: View {
                 store.send(.onAppear)
             }
             .onChange(of: store.errorMessage) { message in
-                guard let message else { return }
+                guard let message, !store.isOffline else { return }
                 onError(message)
                 store.send(.dismissError)
             }
@@ -196,36 +196,44 @@ public struct KlipyTrayView: View {
     // MARK: - Grid
 
     private var contentGrid: some View {
-        ZStack {
-            ScrollView {
-                LazyVGrid(
-                  columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: store.config.columns),
-                  spacing: 10
-                ) {
-                  ForEach(store.mediaItems, id: \.id) { item in
-                    Button { onSelect(item) } label: {
-                      KlipyTrayCell(item: item)
-                        .aspectRatio(item.displayAspectRatio, contentMode: .fit)
-                    }
-                    .buttonStyle(.plain)
-                    .onAppear {
-                      if item.id == store.mediaItems.last?.id {
-                        store.send(.loadNextPage)
-                      }
-                    }
-                  }
+        Group {
+            if store.isOffline && store.mediaItems.isEmpty {
+                KlipyOfflineStateView {
+                    store.send(.retryTapped)
                 }
-                .padding(.horizontal, 12)
-                .padding(.bottom, 12)
+            } else {
+                ZStack {
+                    ScrollView {
+                        LazyVGrid(
+                          columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: store.config.columns),
+                          spacing: 10
+                        ) {
+                          ForEach(store.mediaItems, id: \.id) { item in
+                            Button { onSelect(item) } label: {
+                              KlipyTrayCell(item: item)
+                                .aspectRatio(item.displayAspectRatio, contentMode: .fit)
+                            }
+                            .buttonStyle(.plain)
+                            .onAppear {
+                              if item.id == store.mediaItems.last?.id {
+                                store.send(.loadNextPage)
+                              }
+                            }
+                          }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 12)
 
-                if store.isFetchingNextPage {
-                    ProgressView()
-                        .padding(.vertical, 12)
+                        if store.isFetchingNextPage {
+                            ProgressView()
+                                .padding(.vertical, 12)
+                        }
+                    }
+
+                    if store.isLoading && store.mediaItems.isEmpty {
+                        ProgressView()
+                    }
                 }
-            }
-
-            if store.isLoading && store.mediaItems.isEmpty {
-                ProgressView()
             }
         }
     }
