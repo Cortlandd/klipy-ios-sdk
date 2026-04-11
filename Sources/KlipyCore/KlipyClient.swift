@@ -70,6 +70,7 @@ private extension KlipyClient {
         req.httpMethod = method
         req.httpBody = body
         req.setValue("application/json", forHTTPHeaderField: "Accept")
+        req.setValue(KlipySDKMetadata.userAgent, forHTTPHeaderField: "User-Agent")
         if body != nil {
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
