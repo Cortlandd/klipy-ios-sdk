@@ -122,8 +122,13 @@ struct ChatView: View {
         .sheet(isPresented: $isShowingPicker) {
             KlipyPickerView(
                 client: client,
-                availableTabs: [.gifs, .stickers, .clips],
-                initialTab: .gifs,
+                config: KlipyPickerConfig(
+                    mediaTabs: [.gifs, .stickers, .clips],
+                    columns: 3,
+                    showRecents: false,
+                    showTrending: true,
+                    initialTab: .gifs
+                ),
                 onSelect: { media in
                     selectedMedia = media
                     isShowingPicker = false
@@ -137,7 +142,7 @@ struct ChatView: View {
 }
 ```
 
-`KlipyPickerView` can be limited to a subset of tabs with `availableTabs`. If `initialTab` is not included in that list, the picker falls back to the first available tab.
+`KlipyPickerConfig` mirrors the Android picker config model. If `initialTab` is not included in `mediaTabs`, the picker falls back to the first available tab. If both `showTrending` and `showRecents` are `false`, the picker waits for a search before loading results.
 
 ### Tray integration
 
