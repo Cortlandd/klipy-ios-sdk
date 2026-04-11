@@ -16,6 +16,7 @@ public enum KlipyMediaType: String, Codable, Sendable, Equatable {
     case sticker
     case clip
     case meme
+    case emoji
 
     /// Path segment used in URLs, e.g. "gifs", "stickers"
     var pathSegment: String {
@@ -24,6 +25,7 @@ public enum KlipyMediaType: String, Codable, Sendable, Equatable {
         case .sticker: return "stickers"
         case .clip:    return "clips"
         case .meme:    return "static-memes"
+        case .emoji:   return "emojis"
         }
     }
 }
@@ -153,7 +155,7 @@ public struct KlipyMediaFileMetaEntry: Codable, Sendable, Equatable {
 
 // MARK: - Public media model
 
-/// KLIPY media item (GIF, Sticker, Clip, Meme).
+/// KLIPY media item (GIF, Sticker, Clip, Meme, Emoji).
 public struct KlipyMedia: Codable, Identifiable, Sendable, Equatable {
     /// Unique identifier for the item.
     /// The API sometimes sends `id` as an Int or String; we normalize to String.
@@ -323,4 +325,3 @@ public extension KlipyMedia {
         return aspectRatio
     }
 }
-
