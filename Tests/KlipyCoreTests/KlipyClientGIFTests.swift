@@ -11,25 +11,10 @@ import XCTest
 /// Integration-style tests for the GIF-specific convenience
 /// wrappers defined in `KlipyClient+GIF.swift`.
 final class KlipyClientGIFTests: XCTestCase {
-    
-    private var client: KlipyClient!
-    
-    /// Sample API key for hitting the live Klipy API.
-    /// In a real app, do not commit real production keys to source control.
-    private let apiKey = "wx4NS4jKDijkRGIrNvsuSRAzCm2ZQYVfBIHUU951ZPOHRBDD8OQkoNqjO16UgW1W"
-    
-    override func setUp() {
-        super.setUp()
-        client = KlipyClient.live(apiKey: apiKey)
-    }
-    
-    override func tearDown() {
-        client = nil
-        super.tearDown()
-    }
-    
+
     func testSearchGIFsReturnsPage() async throws {
-        
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         // When
         let page = try await client.searchGIFs(
             query: "hello",
@@ -44,7 +29,8 @@ final class KlipyClientGIFTests: XCTestCase {
     }
     
     func testTrendingGIFsReturnsPage() async throws {
-        
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         // When
         let page = try await client.trendingGIFs(
             page: 1,
@@ -58,7 +44,8 @@ final class KlipyClientGIFTests: XCTestCase {
     }
     
     func testGifFetchesItemBySlugFromTrending() async throws {
-        
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         let trending = try await client.trendingGIFs(
             page: 1,
             perPage: 1,
@@ -79,6 +66,8 @@ final class KlipyClientGIFTests: XCTestCase {
     }
     
     func testGifCategoriesNotEmpty() async throws {
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         // When
         let categories = try await client.gifCategories()
         

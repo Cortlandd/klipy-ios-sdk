@@ -11,24 +11,10 @@ import XCTest
 /// Integration-style tests for the Meme-specific convenience
 /// wrappers defined in `KlipyClient+Meme.swift`.
 final class KlipyClientMemeConvenienceTests: XCTestCase {
-    
-    private var client: KlipyClient!
-    
-    /// Sample API key for hitting the live Klipy API.
-    private let apiKey = "wx4NS4jKDijkRGIrNvsuSRAzCm2ZQYVfBIHUU951ZPOHRBDD8OQkoNqjO16UgW1W"
-    
-    override func setUp() {
-        super.setUp()
-        client = KlipyClient.live(apiKey: apiKey)
-    }
-    
-    override func tearDown() {
-        client = nil
-        super.tearDown()
-    }
-    
+
     func testSearchMemesReturnsPage() async throws {
-        
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         // When
         let page = try await client.searchMemes(
             query: "funny",
@@ -43,7 +29,8 @@ final class KlipyClientMemeConvenienceTests: XCTestCase {
     }
     
     func testTrendingMemesReturnsPage() async throws {
-        
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         // When
         let page = try await client.trendingMemes(
             page: 1,
@@ -57,7 +44,8 @@ final class KlipyClientMemeConvenienceTests: XCTestCase {
     }
     
     func testMemeFetchesItemBySlugFromTrending() async throws {
-        
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         let trending = try await client.trendingMemes(
             page: 1,
             perPage: 1,
@@ -78,6 +66,8 @@ final class KlipyClientMemeConvenienceTests: XCTestCase {
     }
     
     func testMemeCategoriesNotEmpty() async throws {
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         // When
         let categories = try await client.memeCategories()
         

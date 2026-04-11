@@ -12,8 +12,7 @@ import XCTest
 final class KlipyClientPostTests: XCTestCase {
 
     private var client: KlipyClient!
-    /// Same sample key used in GET tests.
-    private let apiKey = "wx4NS4jKDijkRGIrNvsuSRAzCm2ZQYVfBIHUU951ZPOHRBDD8OQkoNqjO16UgW1W"
+    private let apiKey = "test-api-key"
     
     let customerId = "user-123"
 

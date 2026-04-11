@@ -60,21 +60,10 @@ final class KlipyAdParametersTests: XCTestCase {
 
 /// Integration-style test for the `recentWithAds` wrapper.
 final class KlipyClientAdsTests: XCTestCase {
-    
-    private var client: KlipyClient!
-    private let apiKey = "wx4NS4jKDijkRGIrNvsuSRAzCm2ZQYVfBIHUU951ZPOHRBDD8OQkoNqjO16UgW1W"
-    
-    override func setUp() {
-        super.setUp()
-        client = KlipyClient.live(apiKey: apiKey)
-    }
-    
-    override func tearDown() {
-        client = nil
-        super.tearDown()
-    }
-    
+
     func testRecentWithAdsReturnsPageForGIFs() async throws {
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         // Given
         let adParams = KlipyAdParameters(
             minWidth: 320,

@@ -9,21 +9,9 @@ import XCTest
 @testable import KlipyCore
 
 final class KlipyClientEmojiTests: XCTestCase {
-
-    private var client: KlipyClient!
-    private let apiKey = "wx4NS4jKDijkRGIrNvsuSRAzCm2ZQYVfBIHUU951ZPOHRBDD8OQkoNqjO16UgW1W"
-
-    override func setUp() {
-        super.setUp()
-        client = KlipyClient.live(apiKey: apiKey)
-    }
-
-    override func tearDown() {
-        client = nil
-        super.tearDown()
-    }
-
     func testSearchEmojisReturnsPage() async throws {
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         let page = try await client.searchEmojis(
             query: "smile",
             page: 1,
@@ -36,6 +24,8 @@ final class KlipyClientEmojiTests: XCTestCase {
     }
 
     func testTrendingEmojisReturnsPage() async throws {
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         let page = try await client.trendingEmojis(
             page: 1,
             perPage: 5,
@@ -47,6 +37,8 @@ final class KlipyClientEmojiTests: XCTestCase {
     }
 
     func testEmojiFetchesItemBySlugFromTrending() async throws {
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
+
         let trending = try await client.trendingEmojis(
             page: 1,
             perPage: 1,
@@ -65,6 +57,7 @@ final class KlipyClientEmojiTests: XCTestCase {
     }
 
     func testEmojiCategoriesNotEmpty() async throws {
+        let client = try KlipyIntegrationTestSupport.makeLiveClient()
         let categories = try await client.emojiCategories()
         XCTAssertFalse(categories.isEmpty, "Expected at least one emoji category")
     }
