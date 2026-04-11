@@ -147,9 +147,13 @@ public struct KlipyPickerView: View {
             TextField("Search", text: Binding(
                 get: { viewModel.query },
                 set: { viewModel.updateQuery($0) }
-            ), onCommit: {
+            ))
+            .textInputAutocapitalization(.never)
+            .disableAutocorrection(true)
+            .submitLabel(.search)
+            .onSubmit {
                 viewModel.submitSearch()
-            })
+            }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
             .background(

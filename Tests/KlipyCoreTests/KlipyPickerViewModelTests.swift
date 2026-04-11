@@ -137,6 +137,34 @@ final class KlipyPickerViewModelTests: XCTestCase {
         XCTAssertEqual(calls, [.search(kind: .sticker, query: "thumbs up", page: 1, perPage: 24, locale: "en-US")])
     }
 
+    func testSubmitSearchRunsImmediatelyWithoutWaitingForDebounce() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false),
+            searchResult: .init(
+                data: [KlipyMedia(id: "11", slug: "instant-search", type: .gif, title: "Instant Search")],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            )
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            config: KlipyPickerConfig(initialTab: .gifs),
+            locale: "en-US",
+            searchDebounceNanoseconds: 5_000_000_000
+        )
+
+        viewModel.updateQuery("instant")
+        viewModel.submitSearch()
+        await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
+
+        XCTAssertEqual(viewModel.items.first?.slug, "instant-search")
+
+        let calls = await loader.calls
+        XCTAssertEqual(calls, [.search(kind: .gif, query: "instant", page: 1, perPage: 24, locale: "en-US")])
+    }
+
     func testChangingTabsLoadsTheNewMediaType() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(
