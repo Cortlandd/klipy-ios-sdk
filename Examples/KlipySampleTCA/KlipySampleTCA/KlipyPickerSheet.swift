@@ -18,7 +18,13 @@ struct KlipyPickerSheet: View {
         WithPerceptionTracking {
             KlipyPickerView(
                 client: client,
-                initialTab: .gifs,
+                config: KlipyPickerConfig(
+                    mediaTabs: [.gifs, .stickers, .clips, .memes, .emojis],
+                    columns: 3,
+                    showRecents: false,
+                    showTrending: true,
+                    initialTab: .gifs
+                ),
                 onSelect: { media in
                     store.send(.mediaSelected(media))
                 },
