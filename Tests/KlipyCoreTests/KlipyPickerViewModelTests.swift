@@ -12,6 +12,7 @@ import XCTest
 private actor MockKlipyMediaLoader: KlipyMediaLoading {
     enum Call: Equatable {
         case trending(kind: KlipyMediaType, page: Int?, perPage: Int?, locale: String?)
+        case recent(kind: KlipyMediaType, page: Int?, perPage: Int?, locale: String?)
         case search(kind: KlipyMediaType, query: String, page: Int?, perPage: Int?, locale: String?)
     }
 
@@ -47,6 +48,17 @@ private actor MockKlipyMediaLoader: KlipyMediaLoading {
         calls.append(.search(kind: kind, query: query, page: page, perPage: perPage, locale: locale))
         return searchResult
     }
+
+    func recent(
+        kind: KlipyMediaType,
+        page: Int?,
+        perPage: Int?,
+        locale: String?,
+        adParams: [String : String]?
+    ) async throws -> KlipyPage<KlipyMedia> {
+        calls.append(.recent(kind: kind, page: page, perPage: perPage, locale: locale))
+        return trendingResult
+    }
 }
 
 @MainActor
@@ -65,7 +77,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         let viewModel = KlipyPickerViewModel(
             client: loader,
-            initialTab: .gifs,
+            config: KlipyPickerConfig(initialTab: .gifs),
             locale: "en-US",
             searchDebounceNanoseconds: 10_000_000
         )
@@ -93,7 +105,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         let viewModel = KlipyPickerViewModel(
             client: loader,
-            initialTab: .stickers,
+            config: KlipyPickerConfig(initialTab: .stickers),
             locale: "en-US",
             searchDebounceNanoseconds: 10_000_000
         )
@@ -120,7 +132,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         let viewModel = KlipyPickerViewModel(
             client: loader,
-            initialTab: .gifs,
+            config: KlipyPickerConfig(initialTab: .gifs),
             locale: "en-US",
             searchDebounceNanoseconds: 10_000_000
         )
@@ -148,7 +160,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         let viewModel = KlipyPickerViewModel(
             client: loader,
-            initialTab: .gifs,
+            config: KlipyPickerConfig(initialTab: .gifs),
             locale: "en-US",
             searchDebounceNanoseconds: 10_000_000
         )
@@ -181,7 +193,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         let viewModel = KlipyPickerViewModel(
             client: loader,
-            initialTab: .gifs,
+            config: KlipyPickerConfig(initialTab: .gifs),
             locale: "en-US",
             searchDebounceNanoseconds: 10_000_000
         )
@@ -211,8 +223,10 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         let viewModel = KlipyPickerViewModel(
             client: loader,
-            availableTabs: [.stickers, .clips],
-            initialTab: .gifs,
+            config: KlipyPickerConfig(
+                mediaTabs: [.stickers, .clips],
+                initialTab: .gifs
+            ),
             locale: "en-US",
             searchDebounceNanoseconds: 10_000_000
         )
@@ -220,7 +234,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
         viewModel.loadInitial()
         await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
 
-        XCTAssertEqual(viewModel.availableTabs, [.stickers, .clips])
+        XCTAssertEqual(viewModel.config.mediaTabs, [.stickers, .clips])
         XCTAssertEqual(viewModel.selectedTab, .stickers)
         XCTAssertEqual(viewModel.items.first?.type, .sticker)
 
@@ -241,8 +255,10 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         let viewModel = KlipyPickerViewModel(
             client: loader,
-            availableTabs: [.gifs, .stickers],
-            initialTab: .gifs,
+            config: KlipyPickerConfig(
+                mediaTabs: [.gifs, .stickers],
+                initialTab: .gifs
+            ),
             locale: "en-US",
             searchDebounceNanoseconds: 10_000_000
         )
@@ -251,6 +267,68 @@ final class KlipyPickerViewModelTests: XCTestCase {
         await waitUntil { !viewModel.isLoading }
 
         XCTAssertEqual(viewModel.selectedTab, .gifs)
+
+        let calls = await loader.calls
+        XCTAssertEqual(calls, [])
+    }
+
+    func testEmptyQueryCanUseRecentFeedFromConfig() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(
+                data: [KlipyMedia(id: "9", slug: "recent-wave", type: .gif, title: "Recent Wave")],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            ),
+            searchResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false)
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            config: KlipyPickerConfig(
+                showRecents: true,
+                showTrending: false,
+                initialTab: .gifs
+            ),
+            locale: "en-US",
+            searchDebounceNanoseconds: 10_000_000
+        )
+
+        viewModel.loadInitial()
+        await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
+
+        XCTAssertEqual(viewModel.items.first?.slug, "recent-wave")
+
+        let calls = await loader.calls
+        XCTAssertEqual(calls, [.recent(kind: .gif, page: 1, perPage: 24, locale: "en-US")])
+    }
+
+    func testEmptyQueryCanReturnNoResultsWhenFeedsAreDisabled() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(
+                data: [KlipyMedia(id: "10", slug: "unused", type: .gif, title: "Unused")],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            ),
+            searchResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false)
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            config: KlipyPickerConfig(
+                showRecents: false,
+                showTrending: false,
+                initialTab: .gifs
+            ),
+            locale: "en-US",
+            searchDebounceNanoseconds: 10_000_000
+        )
+
+        viewModel.loadInitial()
+        await waitUntil { !viewModel.isLoading }
+
+        XCTAssertTrue(viewModel.items.isEmpty)
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [])

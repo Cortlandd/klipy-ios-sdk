@@ -21,21 +21,37 @@ public struct KlipyPickerView: View {
 
     public init(
         client: KlipyClient,
-        availableTabs: [KlipyPickerMediaTab] = KlipyPickerMediaTab.allCases,
-        initialTab: KlipyPickerMediaTab = .gifs,
+        config: KlipyPickerConfig = .init(),
         onSelect: @escaping (KlipyMedia) -> Void,
         onClose: (() -> Void)? = nil
     ) {
         _viewModel = StateObject(
             wrappedValue: KlipyPickerViewModel(
                 client: client,
-                availableTabs: availableTabs,
-                initialTab: initialTab
+                config: config
             )
         )
         KlipyUIBootstrap.configureIfNeeded()
         self.onSelect = onSelect
         self.onClose = onClose
+    }
+
+    public init(
+        client: KlipyClient,
+        availableTabs: [KlipyPickerMediaTab] = KlipyPickerMediaTab.allCases,
+        initialTab: KlipyPickerMediaTab = .gifs,
+        onSelect: @escaping (KlipyMedia) -> Void,
+        onClose: (() -> Void)? = nil
+    ) {
+        self.init(
+            client: client,
+            config: KlipyPickerConfig(
+                mediaTabs: availableTabs,
+                initialTab: initialTab
+            ),
+            onSelect: onSelect,
+            onClose: onClose
+        )
     }
 
     public var body: some View {
@@ -117,7 +133,7 @@ public struct KlipyPickerView: View {
             get: { viewModel.selectedTab },
             set: { viewModel.didChangeTab($0) }
         )) {
-            ForEach(viewModel.availableTabs, id: \.self) { tab in
+            ForEach(viewModel.config.mediaTabs, id: \.self) { tab in
                 Text(tab.title).tag(tab)
             }
         }
@@ -186,10 +202,7 @@ public struct KlipyPickerView: View {
 
     // Two-column, variable-height grid like Giphy
     private var gridColumns: [GridItem] {
-        return [
-            GridItem(.flexible(), spacing: 4),
-            GridItem(.flexible(), spacing: 4)
-        ]
+        Array(repeating: GridItem(.flexible(), spacing: 4), count: viewModel.config.columns)
     }
 
     private var scrollGrid: some View {

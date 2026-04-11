@@ -15,7 +15,7 @@ public final class KlipyPickerViewModel: ObservableObject {
     @Published public private(set) var isLoading: Bool = false
     @Published public private(set) var lastError: KlipyError?
 
-    public let availableTabs: [KlipyPickerMediaTab]
+    public let config: KlipyPickerConfig
     @Published public var selectedTab: KlipyPickerMediaTab
     @Published public var query: String = ""
 
@@ -33,19 +33,41 @@ public final class KlipyPickerViewModel: ObservableObject {
 
     public init(
         client: any KlipyMediaLoading,
+        config: KlipyPickerConfig = .init(),
+        locale: String = Locale.autoupdatingCurrent.identifier,
+        perPage: Int = 24,
+        searchDebounceNanoseconds: UInt64 = 350_000_000
+    ) {
+        self.client = client
+        let resolvedTabs = config.mediaTabs.isEmpty ? KlipyPickerMediaTab.allCases : config.mediaTabs
+        self.config = KlipyPickerConfig(
+            mediaTabs: resolvedTabs,
+            columns: config.columns,
+            showRecents: config.showRecents,
+            showTrending: config.showTrending,
+            initialTab: resolvedTabs.contains(config.initialTab) ? config.initialTab : resolvedTabs[0]
+        )
+        self.selectedTab = self.config.initialTab
+        self.locale = locale
+        self.perPage = perPage
+        self.searchDebounceNanoseconds = searchDebounceNanoseconds
+    }
+
+    public convenience init(
+        client: any KlipyMediaLoading,
         availableTabs: [KlipyPickerMediaTab] = KlipyPickerMediaTab.allCases,
         initialTab: KlipyPickerMediaTab = .gifs,
         locale: String = Locale.autoupdatingCurrent.identifier,
         perPage: Int = 24,
         searchDebounceNanoseconds: UInt64 = 350_000_000
     ) {
-        self.client = client
-        let resolvedTabs = availableTabs.isEmpty ? KlipyPickerMediaTab.allCases : availableTabs
-        self.availableTabs = resolvedTabs
-        self.selectedTab = resolvedTabs.contains(initialTab) ? initialTab : resolvedTabs[0]
-        self.locale = locale
-        self.perPage = perPage
-        self.searchDebounceNanoseconds = searchDebounceNanoseconds
+        self.init(
+            client: client,
+            config: KlipyPickerConfig(mediaTabs: availableTabs, initialTab: initialTab),
+            locale: locale,
+            perPage: perPage,
+            searchDebounceNanoseconds: searchDebounceNanoseconds
+        )
     }
 
     deinit {
@@ -66,7 +88,7 @@ public final class KlipyPickerViewModel: ObservableObject {
     }
 
     public func didChangeTab(_ tab: KlipyPickerMediaTab) {
-        guard availableTabs.contains(tab) else { return }
+        guard config.mediaTabs.contains(tab) else { return }
         debouncedSearchTask?.cancel()
         selectedTab = tab
         query = ""
@@ -140,12 +162,30 @@ public final class KlipyPickerViewModel: ObservableObject {
                 let pageResult: KlipyPage<KlipyMedia>
 
                 if trimmedQuery.isEmpty {
-                    pageResult = try await client.trending(
-                        kind: selectedTab.mediaType,
-                        page: page,
-                        perPage: perPage,
-                        locale: locale
-                    )
+                    switch config.emptyQueryFeed {
+                    case .trending:
+                        pageResult = try await client.trending(
+                            kind: selectedTab.mediaType,
+                            page: page,
+                            perPage: perPage,
+                            locale: locale
+                        )
+                    case .recent:
+                        pageResult = try await client.recent(
+                            kind: selectedTab.mediaType,
+                            page: page,
+                            perPage: perPage,
+                            locale: locale,
+                            adParams: nil
+                        )
+                    case .none:
+                        pageResult = KlipyPage(
+                            data: [],
+                            currentPage: 1,
+                            perPage: perPage,
+                            hasNext: false
+                        )
+                    }
                 } else {
                     pageResult = try await client.search(
                         kind: selectedTab.mediaType,

@@ -17,6 +17,14 @@ public protocol KlipyMediaLoading: Sendable {
         locale: String?
     ) async throws -> KlipyPage<KlipyMedia>
 
+    func recent(
+        kind: KlipyMediaType,
+        page: Int?,
+        perPage: Int?,
+        locale: String?,
+        adParams: [String: String]?
+    ) async throws -> KlipyPage<KlipyMedia>
+
     func search(
         kind: KlipyMediaType,
         query: String,
