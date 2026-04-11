@@ -17,6 +17,33 @@ public enum KlipyError: Error, Sendable {
 }
 
 extension KlipyError: CustomStringConvertible {
+    public var isConnectivityError: Bool {
+        switch self {
+        case .transportError(let underlying):
+            return Self.isConnectivityIssue(underlying)
+        default:
+            return false
+        }
+    }
+
+    public static func isConnectivityIssue(_ error: Error) -> Bool {
+        if let klipyError = error as? KlipyError {
+            return klipyError.isConnectivityError
+        }
+
+        if let urlError = error as? URLError {
+            return connectivityErrorCodes.contains(urlError.code)
+        }
+
+        let nsError = error as NSError
+        guard nsError.domain == NSURLErrorDomain else {
+            return false
+        }
+
+        let code = URLError.Code(rawValue: nsError.code)
+        return connectivityErrorCodes.contains(code)
+    }
+
     public var description: String {
         switch self {
         case .invalidURL:
@@ -34,7 +61,20 @@ extension KlipyError: CustomStringConvertible {
         case .decodingError(let underlying):
             return "Failed to decode Klipy response: \(underlying.localizedDescription)"
         case .transportError(let underlying):
+            if Self.isConnectivityIssue(underlying) {
+                return "No internet connection. Connect to the internet and try again."
+            }
             return "Network/transport error: \(underlying.localizedDescription)"
         }
     }
+
+    private static let connectivityErrorCodes: Set<URLError.Code> = [
+        .notConnectedToInternet,
+        .networkConnectionLost,
+        .cannotConnectToHost,
+        .cannotFindHost,
+        .dnsLookupFailed,
+        .dataNotAllowed,
+        .internationalRoamingOff
+    ]
 }
