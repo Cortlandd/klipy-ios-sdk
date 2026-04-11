@@ -161,6 +161,12 @@ GitHub Actions now validates the production install surface by building:
 - `KlipyChatUIKit`
 - `KlipyChatTCA`
 
+You can run the same build verification locally with:
+
+```bash
+./scripts/verify-ios-builds.sh
+```
+
 The live endpoint integration tests are opt-in and skip automatically unless `KLIPY_LIVE_API_KEY` is present in the test environment.
 
 ## Key Modules
