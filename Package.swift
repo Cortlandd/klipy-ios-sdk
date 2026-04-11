@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "KlipySDK",
     platforms: [
-        .iOS(.v15)
+        .iOS(.v16)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -29,7 +29,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0")),
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMajor(from: "1.23.1")),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMajor(from: "1.25.5")),
         .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "3.0.0"),
         .package(url: "https://github.com/SDWebImage/SDWebImageWebPCoder.git", from: "0.3.0")
     ],
@@ -59,7 +59,13 @@ let package = Package(
         ),
         .testTarget(
             name: "KlipyCoreTests",
-            dependencies: ["KlipyCore", "KlipyUI", "Mocker"]
+            dependencies: [
+                "KlipyCore",
+                "KlipyUI",
+                "KlipyTray",
+                "Mocker",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+            ]
         ),
     ]
 )
