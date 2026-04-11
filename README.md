@@ -76,6 +76,7 @@ The SDK needs a Klipy API key, but your integration should still avoid checking 
 - If you prefer build settings, define a `KLIPY_API_KEY` user-defined build setting in your app target or in an untracked local `.xcconfig`. The example apps already map that build setting into the app's `Info.plist`.
 - Create `KlipyConfiguration` or `KlipyClient.live(apiKey:)` at your app's composition boundary, then inject the client where your UI or features need it.
 - Treat a shipped iOS key as an app credential, not a secret. Anything embedded in a client app can be recovered, so use app-specific keys, keep them out of git, and rotate them if they leak or if you need to narrow access.
+- The SDK sends `User-Agent: klipy-ios-sdk/1.1.0 (iOS; community SDK)` with requests so API traffic can be identified as coming from this community-maintained iOS package.
 
 ## Quick Start
 
