@@ -1,0 +1,41 @@
+name: iOS Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Build the Swift package
+        run: >
+          xcodebuild build
+          -scheme KlipySDK-Package
+          -destination 'generic/platform=iOS Simulator'
+          -skipPackagePluginValidation
+          -skipMacroValidation
+
+      - name: Build the UIKit example app
+        run: >
+          xcodebuild build
+          -workspace KlipySDK.xcworkspace
+          -scheme KlipyChatUIKit
+          -destination 'generic/platform=iOS Simulator'
+          -skipPackagePluginValidation
+          -skipMacroValidation
+
+      - name: Build the TCA example app
+        run: >
+          xcodebuild build
+          -workspace KlipySDK.xcworkspace
+          -scheme KlipyChatTCA
+          -destination 'generic/platform=iOS Simulator'
+          -skipPackagePluginValidation
+          -skipMacroValidation

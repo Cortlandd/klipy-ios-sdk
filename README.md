@@ -156,6 +156,13 @@ The package currently includes:
 - POST route coverage for share and recent-removal flows
 - picker view-model tests for tab changes and debounced search behavior
 
+GitHub Actions now validates the production install surface by building:
+- `KlipySDK-Package`
+- `KlipyChatUIKit`
+- `KlipyChatTCA`
+
+The live endpoint integration tests are opt-in and skip automatically unless `KLIPY_LIVE_API_KEY` is present in the test environment.
+
 ## Key Modules
 
 - `Sources/KlipyCore`
