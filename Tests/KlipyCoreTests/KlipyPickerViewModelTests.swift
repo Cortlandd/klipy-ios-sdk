@@ -135,6 +135,34 @@ final class KlipyPickerViewModelTests: XCTestCase {
         XCTAssertEqual(calls, [.trending(kind: .clip, page: 1, perPage: 24, locale: "en-US")])
     }
 
+    func testChangingTabsCanLoadEmojiMedia() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(
+                data: [KlipyMedia(id: "4", slug: "party-emoji", type: .emoji, title: "Party")],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            ),
+            searchResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false)
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            initialTab: .gifs,
+            locale: "en-US",
+            searchDebounceNanoseconds: 10_000_000
+        )
+
+        viewModel.didChangeTab(.emojis)
+        await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
+
+        XCTAssertEqual(viewModel.selectedTab, .emojis)
+        XCTAssertEqual(viewModel.items.first?.type, .emoji)
+
+        let calls = await loader.calls
+        XCTAssertEqual(calls, [.trending(kind: .emoji, page: 1, perPage: 24, locale: "en-US")])
+    }
+
     private func waitUntil(
         timeoutNanoseconds: UInt64 = 1_000_000_000,
         condition: @escaping @MainActor () -> Bool

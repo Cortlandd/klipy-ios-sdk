@@ -13,6 +13,7 @@ public enum KlipyPickerMediaTab: String, CaseIterable, Equatable, Sendable {
     case stickers
     case clips
     case memes
+    case emojis
 
     public var title: String {
         switch self {
@@ -20,6 +21,7 @@ public enum KlipyPickerMediaTab: String, CaseIterable, Equatable, Sendable {
         case .stickers: return "Stickers"
         case .clips:    return "Clips"
         case .memes:    return "Memes"
+        case .emojis:   return "Emojis"
         }
     }
 
@@ -29,6 +31,7 @@ public enum KlipyPickerMediaTab: String, CaseIterable, Equatable, Sendable {
         case .stickers: return .sticker
         case .clips:    return .clip
         case .memes:    return .meme
+        case .emojis:   return .emoji
         }
     }
 }

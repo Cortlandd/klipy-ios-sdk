@@ -25,7 +25,7 @@ public struct KlipyMediaPreviewView: View {
             switch media.type {
             case .clip:
                 clipPlayer
-            case .gif, .sticker, .meme:
+            case .gif, .sticker, .meme, .emoji:
                 imagePreview
             }
         }
