@@ -122,6 +122,7 @@ struct ChatView: View {
         .sheet(isPresented: $isShowingPicker) {
             KlipyPickerView(
                 client: client,
+                availableTabs: [.gifs, .stickers, .clips],
                 initialTab: .gifs,
                 onSelect: { media in
                     selectedMedia = media
@@ -135,6 +136,8 @@ struct ChatView: View {
     }
 }
 ```
+
+`KlipyPickerView` can be limited to a subset of tabs with `availableTabs`. If `initialTab` is not included in that list, the picker falls back to the first available tab.
 
 ### Tray integration
 
