@@ -52,7 +52,7 @@ final class KlipyClientContentQueryTests: XCTestCase {
             let query = Dictionary(uniqueKeysWithValues: queryItems.map { ($0.name, $0.value ?? "") })
 
             XCTAssertEqual(request.httpMethod, "GET")
-            XCTAssertEqual(query["ad-frame"], "1")
+            XCTAssertEqual(query["ad-iframe"], "1")
             XCTAssertEqual(query["customer_id"], self.customerId)
             XCTAssertEqual(query["q"], "party")
             XCTAssertEqual(query["page"], "1")
@@ -92,7 +92,7 @@ final class KlipyClientContentQueryTests: XCTestCase {
             let query = Dictionary(uniqueKeysWithValues: queryItems.map { ($0.name, $0.value ?? "") })
 
             XCTAssertEqual(request.httpMethod, "GET")
-            XCTAssertEqual(query["ad-frame"], "1")
+            XCTAssertEqual(query["ad-iframe"], "1")
             XCTAssertEqual(query["ad-min-width"], "320")
             XCTAssertEqual(query["ad-max-height"], "250")
         }
@@ -139,7 +139,7 @@ final class KlipyClientContentQueryTests: XCTestCase {
             let query = Dictionary(uniqueKeysWithValues: queryItems.map { ($0.name, $0.value ?? "") })
 
             XCTAssertEqual(request.httpMethod, "GET")
-            XCTAssertEqual(query["ad-frame"], "1")
+            XCTAssertEqual(query["ad-iframe"], "1")
         }
 
         let requestExpectation = expectationForRequestingMock(&mock)

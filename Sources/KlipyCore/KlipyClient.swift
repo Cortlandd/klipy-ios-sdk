@@ -102,7 +102,7 @@ private extension KlipyClient {
 
 public extension KlipyClient {
     private var defaultContentQueryItems: [String: String] {
-        ["ad-frame": "1"]
+        ["ad-iframe": "1"]
     }
 
     /// Trending items for a given media type.
