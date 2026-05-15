@@ -101,6 +101,9 @@ private extension KlipyClient {
 // MARK: - Generic media endpoints (by type)
 
 public extension KlipyClient {
+    private var defaultContentQueryItems: [String: String] {
+        ["ad-frame": "1"]
+    }
 
     /// Trending items for a given media type.
     func trending(
@@ -109,7 +112,7 @@ public extension KlipyClient {
         perPage: Int? = nil,
         locale: String? = nil
     ) async throws -> KlipyPage<KlipyMedia> {
-        var params: [String: String] = [:]
+        var params = defaultContentQueryItems
         if let page = page { params["page"] = String(page) }
         if let per = perPage ?? configuration.defaultPerPage {
             params["per_page"] = String(per)
@@ -135,7 +138,8 @@ public extension KlipyClient {
         perPage: Int? = nil,
         locale: String? = nil
     ) async throws -> KlipyPage<KlipyMedia> {
-        var params: [String: String] = ["q": query]
+        var params = defaultContentQueryItems
+        params["q"] = query
         if let page = page { params["page"] = String(page) }
         if let per = perPage ?? configuration.defaultPerPage {
             params["per_page"] = String(per)
@@ -161,7 +165,7 @@ public extension KlipyClient {
         locale: String? = nil,
         adParams: [String: String]? = nil
     ) async throws -> KlipyPage<KlipyMedia> {
-        var params: [String: String] = [:]
+        var params = defaultContentQueryItems
         if let page = page { params["page"] = String(page) }
         if let per = perPage ?? configuration.defaultPerPage {
             params["per_page"] = String(per)
@@ -192,7 +196,9 @@ public extension KlipyClient {
         ids: String?,
         slugs: String?
     ) async throws -> [KlipyMedia] {
-        var params: [String: String] = [:]
+        var params = defaultContentQueryItems
+        let hasIds = ids?.isEmpty == false
+        let hasSlugs = slugs?.isEmpty == false
 
         if let ids, !ids.isEmpty {
             params["ids"] = ids
@@ -203,7 +209,7 @@ public extension KlipyClient {
         }
         
         // Require exactly one of ids or slugs.
-        if params.isEmpty || params.count > 1 {
+        if hasIds == hasSlugs {
             throw KlipyError.invalidParameters(message: "Provide either ids OR slugs (comma-separated), not both.")
         }
 
@@ -242,7 +248,8 @@ public extension KlipyClient {
         slugOrId: String
     ) async throws -> KlipyMedia {
         let envelope: KlipyEnvelope<KlipyMedia> = try await request(
-            pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, slugOrId]
+            pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, slugOrId],
+            queryItems: defaultContentQueryItems
         )
         return envelope.data
     }
@@ -253,7 +260,7 @@ public extension KlipyClient {
         kind: KlipyMediaType,
         locale: String? = nil
     ) async throws -> [KlipyCategory] {
-        var params: [String: String] = [:]
+        var params = defaultContentQueryItems
         if let loc = locale ?? configuration.defaultLocale {
             params["locale"] = loc
         }
