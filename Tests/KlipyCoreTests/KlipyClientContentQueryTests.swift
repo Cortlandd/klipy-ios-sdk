@@ -33,7 +33,7 @@ final class KlipyClientContentQueryTests: XCTestCase {
         super.tearDown()
     }
 
-    func testSearchAddsAdFrameToContentRequests() async throws {
+    func testSearchAddsAdIframeAndAdContextToContentRequests() async throws {
         let url = URL(string: "https://api.klipy.com/api/v1/\(apiKey)/gifs/search")!
         let responseBody = """
         { "result": true, "data": { "data": [], "current_page": 1, "per_page": 24, "has_next": false } }
@@ -53,11 +53,17 @@ final class KlipyClientContentQueryTests: XCTestCase {
 
             XCTAssertEqual(request.httpMethod, "GET")
             XCTAssertEqual(query["ad-iframe"], "1")
+            XCTAssertEqual(query["ad-min-width"], "50")
+            XCTAssertEqual(query["ad-min-height"], "50")
+            XCTAssertEqual(query["ad-max-height"], "250")
+            XCTAssertEqual(query["ad-os"], "ios")
+            XCTAssertTrue((query["ad-user-agent"] ?? "").hasPrefix("Mozilla/5.0"))
             XCTAssertEqual(query["customer_id"], self.customerId)
             XCTAssertEqual(query["q"], "party")
             XCTAssertEqual(query["page"], "1")
             XCTAssertEqual(query["per_page"], "24")
             XCTAssertEqual(query["locale"], "en-US")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "X-Klipy-Client"), KlipySDKMetadata.clientIdentifier)
         }
 
         let requestExpectation = expectationForRequestingMock(&mock)
@@ -73,7 +79,7 @@ final class KlipyClientContentQueryTests: XCTestCase {
         )
     }
 
-    func testRecentPreservesAdParametersAndAddsAdFrame() async throws {
+    func testRecentPreservesExplicitAdParametersAndAddsAdIframe() async throws {
         let url = URL(string: "https://api.klipy.com/api/v1/\(apiKey)/gifs/recent/\(customerId)")!
         let responseBody = """
         { "result": true, "data": { "data": [], "current_page": 1, "per_page": 24, "has_next": false } }
@@ -95,6 +101,7 @@ final class KlipyClientContentQueryTests: XCTestCase {
             XCTAssertEqual(query["ad-iframe"], "1")
             XCTAssertEqual(query["ad-min-width"], "320")
             XCTAssertEqual(query["ad-max-height"], "250")
+            XCTAssertTrue((query["ad-user-agent"] ?? "").hasPrefix("Mozilla/5.0"))
         }
 
         let requestExpectation = expectationForRequestingMock(&mock)
@@ -119,7 +126,7 @@ final class KlipyClientContentQueryTests: XCTestCase {
         )
     }
 
-    func testItemAddsAdFrameToSingleContentRequests() async throws {
+    func testItemAddsAdIframeToSingleContentRequests() async throws {
         let slug = "hello-hi-662"
         let url = URL(string: "https://api.klipy.com/api/v1/\(apiKey)/gifs/\(slug)")!
         let responseBody = """
@@ -140,6 +147,7 @@ final class KlipyClientContentQueryTests: XCTestCase {
 
             XCTAssertEqual(request.httpMethod, "GET")
             XCTAssertEqual(query["ad-iframe"], "1")
+            XCTAssertTrue((query["ad-user-agent"] ?? "").hasPrefix("Mozilla/5.0"))
         }
 
         let requestExpectation = expectationForRequestingMock(&mock)

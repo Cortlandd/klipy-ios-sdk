@@ -66,11 +66,13 @@ private extension KlipyClient {
         body: Data? = nil
     ) async throws -> T {
         let url = try buildURL(pathComponents: pathComponents, queryItems: queryItems)
+        let browserUserAgent = await KlipyBrowserUserAgentProvider.shared.userAgent()
         var req = URLRequest(url: url)
         req.httpMethod = method
         req.httpBody = body
         req.setValue("application/json", forHTTPHeaderField: "Accept")
-        req.setValue(KlipySDKMetadata.userAgent, forHTTPHeaderField: "User-Agent")
+        req.setValue(browserUserAgent, forHTTPHeaderField: "User-Agent")
+        req.setValue(KlipySDKMetadata.clientIdentifier, forHTTPHeaderField: "X-Klipy-Client")
         if body != nil {
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
@@ -101,18 +103,30 @@ private extension KlipyClient {
 // MARK: - Generic media endpoints (by type)
 
 public extension KlipyClient {
-    private var defaultContentQueryItems: [String: String] {
-        ["ad-iframe": "1"]
+    private func defaultContentQueryItems() async -> [String: String] {
+        let browserUserAgent = await KlipyBrowserUserAgentProvider.shared.userAgent()
+        return await KlipyAdRequestContext.defaultQueryItems(userAgent: browserUserAgent)
     }
 
-    /// Trending items for a given media type.
-    func trending(
+    private func contentPage(
+        pathComponents: [String],
+        queryItems: [String: String]
+    ) async throws -> KlipyPage<KlipyContentItem> {
+        let envelope: KlipyEnvelope<KlipyPage<KlipyContentItem>> = try await request(
+            pathComponents: pathComponents,
+            queryItems: queryItems
+        )
+        return envelope.data
+    }
+
+    /// Trending items for a given media type, preserving ads alongside media items.
+    func trendingContent(
         kind: KlipyMediaType,
         page: Int? = nil,
         perPage: Int? = nil,
         locale: String? = nil
-    ) async throws -> KlipyPage<KlipyMedia> {
-        var params = defaultContentQueryItems
+    ) async throws -> KlipyPage<KlipyContentItem> {
+        var params = await defaultContentQueryItems()
         if let page = page { params["page"] = String(page) }
         if let per = perPage ?? configuration.defaultPerPage {
             params["per_page"] = String(per)
@@ -120,25 +134,24 @@ public extension KlipyClient {
         if let loc = locale ?? configuration.defaultLocale {
             params["locale"] = loc
         }
-        
+
         params["customer_id"] = resolvedCustomerId
 
-        let envelope: KlipyEnvelope<KlipyPage<KlipyMedia>> = try await request(
+        return try await contentPage(
             pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, "trending"],
             queryItems: params
         )
-        return envelope.data
     }
 
-    /// Search API for a given media type.
-    func search(
+    /// Search API for a given media type, preserving ads alongside media items.
+    func searchContent(
         kind: KlipyMediaType,
         query: String,
         page: Int? = nil,
         perPage: Int? = nil,
         locale: String? = nil
-    ) async throws -> KlipyPage<KlipyMedia> {
-        var params = defaultContentQueryItems
+    ) async throws -> KlipyPage<KlipyContentItem> {
+        var params = await defaultContentQueryItems()
         params["q"] = query
         if let page = page { params["page"] = String(page) }
         if let per = perPage ?? configuration.defaultPerPage {
@@ -147,25 +160,24 @@ public extension KlipyClient {
         if let loc = locale ?? configuration.defaultLocale {
             params["locale"] = loc
         }
-        
+
         params["customer_id"] = resolvedCustomerId
 
-        let envelope: KlipyEnvelope<KlipyPage<KlipyMedia>> = try await request(
+        return try await contentPage(
             pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, "search"],
             queryItems: params
         )
-        return envelope.data
     }
 
-    /// Recent items per user for a given media type.
-    func recent(
+    /// Recent items per user for a given media type, preserving ads alongside media items.
+    func recentContent(
         kind: KlipyMediaType,
         page: Int? = nil,
         perPage: Int? = nil,
         locale: String? = nil,
         adParams: [String: String]? = nil
-    ) async throws -> KlipyPage<KlipyMedia> {
-        var params = defaultContentQueryItems
+    ) async throws -> KlipyPage<KlipyContentItem> {
+        var params = await defaultContentQueryItems()
         if let page = page { params["page"] = String(page) }
         if let per = perPage ?? configuration.defaultPerPage {
             params["per_page"] = String(per)
@@ -179,11 +191,62 @@ public extension KlipyClient {
             }
         }
 
-        let envelope: KlipyEnvelope<KlipyPage<KlipyMedia>> = try await request(
+        return try await contentPage(
             pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, "recent", resolvedCustomerId],
             queryItems: params
         )
-        return envelope.data
+    }
+
+    /// Trending items for a given media type.
+    func trending(
+        kind: KlipyMediaType,
+        page: Int? = nil,
+        perPage: Int? = nil,
+        locale: String? = nil
+    ) async throws -> KlipyPage<KlipyMedia> {
+        let page = try await trendingContent(
+            kind: kind,
+            page: page,
+            perPage: perPage,
+            locale: locale
+        )
+        return page.mediaPage
+    }
+
+    /// Search API for a given media type.
+    func search(
+        kind: KlipyMediaType,
+        query: String,
+        page: Int? = nil,
+        perPage: Int? = nil,
+        locale: String? = nil
+    ) async throws -> KlipyPage<KlipyMedia> {
+        let page = try await searchContent(
+            kind: kind,
+            query: query,
+            page: page,
+            perPage: perPage,
+            locale: locale
+        )
+        return page.mediaPage
+    }
+
+    /// Recent items per user for a given media type.
+    func recent(
+        kind: KlipyMediaType,
+        page: Int? = nil,
+        perPage: Int? = nil,
+        locale: String? = nil,
+        adParams: [String: String]? = nil
+    ) async throws -> KlipyPage<KlipyMedia> {
+        let page = try await recentContent(
+            kind: kind,
+            page: page,
+            perPage: perPage,
+            locale: locale,
+            adParams: adParams
+        )
+        return page.mediaPage
     }
 
 
@@ -196,7 +259,7 @@ public extension KlipyClient {
         ids: String?,
         slugs: String?
     ) async throws -> [KlipyMedia] {
-        var params = defaultContentQueryItems
+        var params = await defaultContentQueryItems()
         let hasIds = ids?.isEmpty == false
         let hasSlugs = slugs?.isEmpty == false
 
@@ -249,7 +312,7 @@ public extension KlipyClient {
     ) async throws -> KlipyMedia {
         let envelope: KlipyEnvelope<KlipyMedia> = try await request(
             pathComponents: ["api", "v1", configuration.apiKey, kind.pathSegment, slugOrId],
-            queryItems: defaultContentQueryItems
+            queryItems: await defaultContentQueryItems()
         )
         return envelope.data
     }
@@ -260,7 +323,7 @@ public extension KlipyClient {
         kind: KlipyMediaType,
         locale: String? = nil
     ) async throws -> [KlipyCategory] {
-        var params = defaultContentQueryItems
+        var params = await defaultContentQueryItems()
         if let loc = locale ?? configuration.defaultLocale {
             params["locale"] = loc
         }
