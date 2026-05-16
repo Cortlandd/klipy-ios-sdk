@@ -11,11 +11,12 @@ import XCTest
 
 final class KlipyMasonryLayoutCalculatorTests: XCTestCase {
 
-    func testCalculatorKeepsAdvertisementsInlineWithMediaTiles() {
+    func testCalculatorLetsAdvertisementsBecomeStandaloneBannerRows() {
         let items: [KlipyContentItem] = [
             .media(makeMedia(id: "1", width: 220, height: 220)),
+            .media(makeMedia(id: "2", width: 220, height: 220)),
             .advertisement(KlipyAdvertisement(content: "https://klipy.com/ad/1", width: 320, height: 100)),
-            .media(makeMedia(id: "2", width: 220, height: 180))
+            .media(makeMedia(id: "3", width: 220, height: 180))
         ]
 
         let rows = KlipyMasonryLayoutCalculator(
@@ -26,12 +27,13 @@ final class KlipyMasonryLayoutCalculatorTests: XCTestCase {
             metadata: KlipyPageMeta(itemMinWidth: 100, adMaxResizePercent: 30)
         ).makeRows(items: items)
 
-        XCTAssertEqual(rows.count, 2)
+        XCTAssertEqual(rows.count, 3)
         XCTAssertEqual(rows.first?.items.count, 2)
         XCTAssertNotNil(rows.first?.items[0].item.media)
-        XCTAssertNotNil(rows.first?.items[1].item.advertisement)
-        XCTAssertEqual(rows.first?.items[0].width ?? 0, 118, accuracy: 1)
-        XCTAssertEqual(rows.first?.items[1].width ?? 0, 240, accuracy: 1)
+        XCTAssertNotNil(rows.first?.items[1].item.media)
+        XCTAssertEqual(rows[1].items.count, 1)
+        XCTAssertNotNil(rows[1].items[0].item.advertisement)
+        XCTAssertEqual(rows[1].items[0].width, 320, accuracy: 1)
     }
 
     func testCalculatorRespectsMinimumTileWidthFromFeedMetadata() {

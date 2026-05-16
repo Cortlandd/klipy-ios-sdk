@@ -114,148 +114,176 @@ struct KlipyMasonryLayoutCalculator {
             return []
         }
 
-        let descriptors = items.map(KlipyMasonryLayoutDescriptor.init)
         var rows: [KlipyMasonryRowLayout] = []
-        var pending: [KlipyMasonryLayoutDescriptor] = []
+        let candidates = items.map(KlipyMasonryLayoutCandidate.init)
+        var nextIndex = 0
 
-        for descriptor in descriptors {
-            guard !pending.isEmpty else {
-                pending = [descriptor]
-                continue
-            }
+        while nextIndex < candidates.count {
+            let endIndex = min(nextIndex + maxItemsPerRow, candidates.count)
+            let possibleItems = Array(candidates[nextIndex..<endIndex])
+            let (rowCandidates, rowHeight) = calculateOptimalRow(
+                possibleItems,
+                itemMinWidth: metadata?.itemMinWidth ?? 0,
+                adMaxResizePercent: metadata?.adMaxResizePercent ?? 0
+            )
 
-            let candidate = pending + [descriptor]
+            rows.append(
+                KlipyMasonryRowLayout(
+                    items: rowCandidates.map {
+                        KlipyMasonryItemLayout(
+                            item: $0.item,
+                            width: $0.width,
+                            height: $0.height
+                        )
+                    },
+                    height: rowHeight
+                )
+            )
 
-            if shouldStartNewRow(beforeAppending: descriptor, to: pending, candidate: candidate) {
-                rows.append(makeRow(from: pending))
-                pending = [descriptor]
-                continue
-            }
-
-            pending = candidate
-
-            if shouldFinalizeRow(pending) {
-                rows.append(makeRow(from: pending))
-                pending.removeAll(keepingCapacity: true)
-            }
-        }
-
-        if !pending.isEmpty {
-            rows.append(makeRow(from: pending))
+            nextIndex += max(1, rowCandidates.count)
         }
 
         return rows
     }
 
-    private func shouldStartNewRow(
-        beforeAppending descriptor: KlipyMasonryLayoutDescriptor,
-        to pending: [KlipyMasonryLayoutDescriptor],
-        candidate: [KlipyMasonryLayoutDescriptor]
-    ) -> Bool {
-        if candidate.count > rowItemLimit(for: candidate) {
-            return true
+    private func calculateOptimalRow(
+        _ candidateItems: [KlipyMasonryLayoutCandidate],
+        itemMinWidth: CGFloat,
+        adMaxResizePercent: CGFloat
+    ) -> ([KlipyMasonryLayoutCandidate], CGFloat) {
+        var minimumChange = CGFloat.greatestFiniteMagnitude
+        var optimizedRow: [KlipyMasonryLayoutCandidate] = []
+        var optimalRowHeight: CGFloat = 0
+
+        var currentMinHeight = rowHeightRange.lowerBound
+        var currentMaxHeight = rowHeightRange.upperBound
+
+        let adIndex = candidateItems.firstIndex(where: \.isAdvertisement)
+        if let adIndex, adIndex > 1 {
+            return calculateOptimalRow(Array(candidateItems.prefix(2)), itemMinWidth: itemMinWidth, adMaxResizePercent: adMaxResizePercent)
+        } else if let adIndex {
+            currentMinHeight = candidateItems[adIndex].height
+            currentMaxHeight = candidateItems[adIndex].height
         }
 
-        let widthCheck = makeRow(from: candidate)
-        if let minimumWidth = metadata?.itemMinWidth,
-           widthCheck.items.contains(where: { $0.width < minimumWidth }) {
-            return true
+        if currentMinHeight > currentMaxHeight {
+            currentMaxHeight = currentMinHeight
         }
 
-        if descriptor.isAdvertisement, !pending.isEmpty {
-            return idealRowHeight(for: pending) <= rowHeightRange.upperBound
+        for height in Int(currentMinHeight)...Int(currentMaxHeight) {
+            var itemsInRow: [KlipyMasonryLayoutCandidate] = []
+
+            for item in candidateItems {
+                var newItem = item
+                if item.isAdvertisement {
+                    newItem.newWidth = item.width
+                } else {
+                    newItem.newWidth = round((item.originalWidth * CGFloat(height)) / max(item.originalHeight, 1))
+                }
+
+                itemsInRow.append(newItem)
+
+                let totalWidth = itemsInRow.reduce(CGFloat.zero) { $0 + $1.newWidth } + (CGFloat(itemsInRow.count - 1) * spacing)
+                let change = containerWidth - totalWidth
+
+                if abs(change) < abs(minimumChange) || (optimizedRow.count == 1 && itemsInRow.count != 1) {
+                    if itemsInRow.count != 1 || optimizedRow.isEmpty {
+                        minimumChange = change
+                        optimizedRow = itemsInRow
+                        optimalRowHeight = CGFloat(height)
+                    }
+                }
+            }
         }
 
-        return false
-    }
+        let nonAdItems = optimizedRow.filter { !$0.isAdvertisement }
+        let adjustmentPerItem = nonAdItems.isEmpty ? 0 : minimumChange / CGFloat(nonAdItems.count)
 
-    private func shouldFinalizeRow(_ descriptors: [KlipyMasonryLayoutDescriptor]) -> Bool {
-        if descriptors.count >= rowItemLimit(for: descriptors) {
-            return true
+        for index in optimizedRow.indices {
+            if optimizedRow[index].isAdvertisement {
+                optimizedRow[index].width = optimizedRow[index].newWidth
+            } else {
+                optimizedRow[index].width = optimizedRow[index].newWidth + adjustmentPerItem
+            }
+            optimizedRow[index].height = optimalRowHeight
         }
 
-        return idealRowHeight(for: descriptors) <= rowHeightRange.upperBound
-    }
+        if let adIndex, nonAdItems.count != optimizedRow.count {
+            let itemsBelowMinWidth = nonAdItems.filter { $0.width < itemMinWidth }
 
-    private func rowItemLimit(for descriptors: [KlipyMasonryLayoutDescriptor]) -> Int {
-        descriptors.contains(where: \.isAdvertisement) ? min(2, maxItemsPerRow) : maxItemsPerRow
-    }
+            if !itemsBelowMinWidth.isEmpty {
+                for index in optimizedRow.indices where !optimizedRow[index].isAdvertisement && optimizedRow[index].width < itemMinWidth {
+                    optimizedRow[index].width = itemMinWidth
+                }
 
-    private func idealRowHeight(for descriptors: [KlipyMasonryLayoutDescriptor]) -> CGFloat {
-        let totalAspectRatio = descriptors.reduce(CGFloat.zero) { $0 + $1.aspectRatio }
-        guard totalAspectRatio > 0 else {
-            return rowHeightRange.lowerBound
+                let newRowWidth = optimizedRow.reduce(CGFloat.zero) { $0 + $1.width } + (CGFloat(optimizedRow.count - 1) * spacing)
+
+                if newRowWidth > containerWidth {
+                    var adItem = optimizedRow[adIndex]
+                    let minAdWidth = adItem.width * ((100 - adMaxResizePercent) / 100)
+                    var resizedAdWidth = adItem.width - (newRowWidth - containerWidth)
+
+                    if resizedAdWidth < minAdWidth {
+                        let adWidthDifference = minAdWidth - resizedAdWidth
+                        let adjustableCount = max(1, itemsBelowMinWidth.count)
+
+                        for index in optimizedRow.indices where !optimizedRow[index].isAdvertisement && optimizedRow[index].width == itemMinWidth {
+                            optimizedRow[index].width -= adWidthDifference / CGFloat(adjustableCount)
+                        }
+
+                        resizedAdWidth = minAdWidth
+                    }
+
+                    let scaleFactor = resizedAdWidth / max(adItem.width, 1)
+                    adItem.height *= scaleFactor
+                    adItem.width = resizedAdWidth
+                    adItem.newWidth = resizedAdWidth
+                    optimizedRow[adIndex] = adItem
+
+                    for index in optimizedRow.indices where !optimizedRow[index].isAdvertisement {
+                        optimizedRow[index].height = adItem.height
+                    }
+
+                    optimalRowHeight = adItem.height
+                }
+            }
         }
 
-        let availableWidth = max(1, containerWidth - (CGFloat(descriptors.count - 1) * spacing))
-        return availableWidth / totalAspectRatio
-    }
-
-    private func makeRow(from descriptors: [KlipyMasonryLayoutDescriptor]) -> KlipyMasonryRowLayout {
-        if let advertisementRow = makeAdvertisementRow(from: descriptors) {
-            return advertisementRow
-        }
-
-        let height = min(max(idealRowHeight(for: descriptors), rowHeightRange.lowerBound), rowHeightRange.upperBound)
-        let availableWidth = max(1, containerWidth - (CGFloat(descriptors.count - 1) * spacing))
-        let naturalWidths = descriptors.map { $0.aspectRatio * height }
-        let remainder = max(0, availableWidth - naturalWidths.reduce(0, +))
-        let adjustableIndices = descriptors.indices.filter { !descriptors[$0].isAdvertisement }
-        let targets = adjustableIndices.isEmpty ? Array(descriptors.indices) : adjustableIndices
-        let expansion = targets.isEmpty ? 0 : remainder / CGFloat(targets.count)
-
-        let items = descriptors.enumerated().map { index, descriptor in
-            let width = naturalWidths[index] + (targets.contains(index) ? expansion : 0)
-            return KlipyMasonryItemLayout(
-                item: descriptor.item,
-                width: max(width, metadata?.itemMinWidth ?? 0),
-                height: height
-            )
-        }
-
-        return KlipyMasonryRowLayout(items: items, height: height)
-    }
-
-    private func makeAdvertisementRow(from descriptors: [KlipyMasonryLayoutDescriptor]) -> KlipyMasonryRowLayout? {
-        guard maxItemsPerRow >= 3,
-              descriptors.count == 2,
-              let advertisementIndex = descriptors.firstIndex(where: \.isAdvertisement) else {
-            return nil
-        }
-
-        let unitWidth = max(1, (containerWidth - (CGFloat(maxItemsPerRow - 1) * spacing)) / CGFloat(maxItemsPerRow))
-        let advertisementWidth = (unitWidth * 2) + spacing
-        let advertisementHeight = advertisementWidth / max(descriptors[advertisementIndex].aspectRatio, 1)
-        let height = min(max(advertisementHeight, rowHeightRange.lowerBound), rowHeightRange.upperBound)
-
-        let items = descriptors.enumerated().map { index, descriptor in
-            let width = index == advertisementIndex ? advertisementWidth : unitWidth
-            return KlipyMasonryItemLayout(
-                item: descriptor.item,
-                width: width,
-                height: height
-            )
-        }
-
-        return KlipyMasonryRowLayout(items: items, height: height)
+        return (optimizedRow, optimalRowHeight)
     }
 }
 
-private struct KlipyMasonryLayoutDescriptor {
+private struct KlipyMasonryLayoutCandidate {
     let item: KlipyContentItem
-    let aspectRatio: CGFloat
     let isAdvertisement: Bool
+    let originalWidth: CGFloat
+    let originalHeight: CGFloat
+    var width: CGFloat
+    var height: CGFloat
+    var newWidth: CGFloat = 0
 
     init(item: KlipyContentItem) {
         self.item = item
 
         switch item {
         case .media(let media):
-            aspectRatio = media.masonryAspectRatio
             isAdvertisement = false
+            let dimensions = media.preferredLayoutDimensions ?? CGSize(
+                width: max(media.displayAspectRatio, 0.55) * 100,
+                height: 100
+            )
+            originalWidth = max(dimensions.width, 1)
+            originalHeight = max(dimensions.height, 1)
+            width = originalWidth
+            height = originalHeight
         case .advertisement(let advertisement):
-            aspectRatio = advertisement.masonryAspectRatio
             isAdvertisement = true
+            let widthValue = max(CGFloat(advertisement.width ?? 320), 1)
+            let heightValue = max(CGFloat(advertisement.height ?? 100), 1)
+            originalWidth = widthValue
+            originalHeight = heightValue
+            width = widthValue
+            height = heightValue
         }
     }
 }
@@ -305,13 +333,5 @@ private extension KlipyMedia {
         }
 
         return nil
-    }
-}
-
-private extension KlipyAdvertisement {
-    var masonryAspectRatio: CGFloat {
-        let width = CGFloat(self.width ?? 320)
-        let height = CGFloat(self.height ?? 100)
-        return max(1.8, min(width / max(height, 1), 2.05))
     }
 }
