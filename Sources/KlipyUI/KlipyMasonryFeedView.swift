@@ -9,6 +9,7 @@ import SwiftUI
 import KlipyCore
 
 public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Footer: View>: View {
+    private let tileInset: CGFloat
     private let items: [KlipyContentItem]
     private let metadata: KlipyPageMeta?
     private let maxItemsPerRow: Int
@@ -24,6 +25,7 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
         metadata: KlipyPageMeta?,
         maxItemsPerRow: Int,
         spacing: CGFloat = 0,
+        tileInset: CGFloat = 1,
         rowHeightRange: ClosedRange<CGFloat> = 92...190,
         onLoadMore: @escaping (KlipyContentItem) -> Void,
         @ViewBuilder mediaTile: @escaping (KlipyMedia) -> MediaTile,
@@ -34,6 +36,7 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
         self.metadata = metadata
         self.maxItemsPerRow = max(2, maxItemsPerRow)
         self.spacing = spacing
+        self.tileInset = tileInset
         self.rowHeightRange = rowHeightRange
         self.onLoadMore = onLoadMore
         self.mediaTile = mediaTile
@@ -46,6 +49,7 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
             let rows = KlipyMasonryLayoutCalculator(
                 containerWidth: geometry.size.width,
                 spacing: spacing,
+                tileInset: tileInset,
                 rowHeightRange: rowHeightRange,
                 maxItemsPerRow: maxItemsPerRow,
                 metadata: metadata
@@ -78,11 +82,11 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
         switch layout.item {
         case .media(let media):
             mediaTile(media)
-                .padding(1)
+                .padding(tileInset)
 
         case .advertisement(let advertisement):
             advertisementTile(advertisement)
-                .padding(1)
+                .padding(tileInset)
         }
     }
 }
@@ -107,6 +111,7 @@ struct KlipyMasonryRowLayout: Identifiable, Equatable {
 struct KlipyMasonryLayoutCalculator {
     let containerWidth: CGFloat
     let spacing: CGFloat
+    let tileInset: CGFloat
     let rowHeightRange: ClosedRange<CGFloat>
     let maxItemsPerRow: Int
     let metadata: KlipyPageMeta?
@@ -172,15 +177,20 @@ struct KlipyMasonryLayoutCalculator {
             currentMaxHeight = currentMinHeight
         }
 
+        let itemPadding = tileInset * 2
+
         for height in Int(currentMinHeight)...Int(currentMaxHeight) {
             var itemsInRow: [KlipyMasonryLayoutCandidate] = []
 
             for item in candidateItems {
                 var newItem = item
                 if item.isAdvertisement {
-                    newItem.newWidth = item.width
+                    newItem.newWidth = max(1, item.width - itemPadding)
                 } else {
-                    newItem.newWidth = round((item.originalWidth * CGFloat(height)) / max(item.originalHeight, 1))
+                    newItem.newWidth = max(
+                        1,
+                        round((item.originalWidth * CGFloat(height)) / max(item.originalHeight, 1)) - itemPadding
+                    )
                 }
 
                 itemsInRow.append(newItem)
@@ -208,6 +218,7 @@ struct KlipyMasonryLayoutCalculator {
                 optimizedRow[index].width = optimizedRow[index].newWidth + adjustmentPerItem
             }
             optimizedRow[index].height = optimalRowHeight
+            optimizedRow[index].width += itemPadding
         }
 
         if let adIndex, nonAdItems.count != optimizedRow.count {
