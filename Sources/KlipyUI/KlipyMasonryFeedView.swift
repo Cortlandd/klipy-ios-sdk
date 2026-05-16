@@ -61,7 +61,7 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
                 } columnSpan: { item in
                     .fixed(KlipyMasonryFeedLayoutPolicy.columnSpan(for: item, maxItemsPerRow: maxItemsPerRow))
                 }
-                .masonryPlacementMode(.order)
+                .masonryPlacementMode(.fill)
 
                 footer
             }
