@@ -192,6 +192,10 @@ struct KlipyMasonryLayoutCalculator {
     }
 
     private func makeRow(from descriptors: [KlipyMasonryLayoutDescriptor]) -> KlipyMasonryRowLayout {
+        if let advertisementRow = makeAdvertisementRow(from: descriptors) {
+            return advertisementRow
+        }
+
         let height = min(max(idealRowHeight(for: descriptors), rowHeightRange.lowerBound), rowHeightRange.upperBound)
         let availableWidth = max(1, containerWidth - (CGFloat(descriptors.count - 1) * spacing))
         let naturalWidths = descriptors.map { $0.aspectRatio * height }
@@ -205,6 +209,30 @@ struct KlipyMasonryLayoutCalculator {
             return KlipyMasonryItemLayout(
                 item: descriptor.item,
                 width: max(width, metadata?.itemMinWidth ?? 0),
+                height: height
+            )
+        }
+
+        return KlipyMasonryRowLayout(items: items, height: height)
+    }
+
+    private func makeAdvertisementRow(from descriptors: [KlipyMasonryLayoutDescriptor]) -> KlipyMasonryRowLayout? {
+        guard maxItemsPerRow >= 3,
+              descriptors.count == 2,
+              let advertisementIndex = descriptors.firstIndex(where: \.isAdvertisement) else {
+            return nil
+        }
+
+        let unitWidth = max(1, (containerWidth - (CGFloat(maxItemsPerRow - 1) * spacing)) / CGFloat(maxItemsPerRow))
+        let advertisementWidth = (unitWidth * 2) + spacing
+        let advertisementHeight = advertisementWidth / max(descriptors[advertisementIndex].aspectRatio, 1)
+        let height = min(max(advertisementHeight, rowHeightRange.lowerBound), rowHeightRange.upperBound)
+
+        let items = descriptors.enumerated().map { index, descriptor in
+            let width = index == advertisementIndex ? advertisementWidth : unitWidth
+            return KlipyMasonryItemLayout(
+                item: descriptor.item,
+                width: width,
                 height: height
             )
         }
@@ -284,6 +312,6 @@ private extension KlipyAdvertisement {
     var masonryAspectRatio: CGFloat {
         let width = CGFloat(self.width ?? 320)
         let height = CGFloat(self.height ?? 100)
-        return max(0.8, min(width / max(height, 1), 3.2))
+        return max(1.8, min(width / max(height, 1), 2.05))
     }
 }
