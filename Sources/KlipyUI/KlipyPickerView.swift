@@ -210,45 +210,32 @@ public struct KlipyPickerView: View {
         }
     }
 
-    // Two-column, variable-height grid like Giphy
-    private var gridColumns: [GridItem] {
-        Array(repeating: GridItem(.flexible(), spacing: 4), count: viewModel.config.columns)
-    }
-
     private var scrollGrid: some View {
-        ScrollView {
-            LazyVGrid(columns: gridColumns, alignment: .center, spacing: 4) {
-                ForEach(viewModel.items, id: \.id) { item in
-                    switch item {
-                    case .media(let media):
-                        Button {
-                            onSelect(media)
-                        } label: {
-                            KlipyThumbnailView(media: media, isClipsMuted: $isClipsMuted)
-                        }
-                        .buttonStyle(.plain)
-                        .onAppear {
-                            viewModel.loadMoreIfNeeded(currentItem: item)
-                        }
-
-                    case .advertisement(let advertisement):
-                        KlipyAdvertisementView(advertisement: advertisement)
-                            .gridCellColumns(viewModel.config.columns)
-                            .onAppear {
-                                viewModel.loadMoreIfNeeded(currentItem: item)
-                            }
-                    }
-                }
-
-                if viewModel.isLoading && !viewModel.items.isEmpty {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                }
+        KlipyMasonryFeedView(
+            items: viewModel.items,
+            metadata: viewModel.layoutMetadata,
+            maxItemsPerRow: viewModel.config.columns,
+            spacing: 8,
+            onLoadMore: { item in
+                viewModel.loadMoreIfNeeded(currentItem: item)
             }
-            .padding(.horizontal, 4)
-            .padding(.vertical, 4)
+        ) { media in
+            Button {
+                onSelect(media)
+            } label: {
+                KlipyThumbnailView(media: media, isClipsMuted: $isClipsMuted)
+            }
+            .buttonStyle(.plain)
+        } advertisementTile: { advertisement in
+            KlipyAdvertisementView(advertisement: advertisement)
+        } footer: {
+            if viewModel.isLoading && !viewModel.items.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+            }
         }
+        .padding(.horizontal, 4)
     }
 }
 

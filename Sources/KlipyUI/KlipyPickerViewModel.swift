@@ -12,6 +12,7 @@ import KlipyCore
 @MainActor
 public final class KlipyPickerViewModel: ObservableObject {
     @Published public private(set) var items: [KlipyContentItem] = []
+    @Published public private(set) var layoutMetadata: KlipyPageMeta?
     @Published public private(set) var isLoading: Bool = false
     @Published public private(set) var lastError: KlipyError?
 
@@ -82,6 +83,7 @@ public final class KlipyPickerViewModel: ObservableObject {
         currentPage = 1
         hasNextPage = true
         items = []
+        layoutMetadata = nil
         lastError = nil
 
         loadPage(page: 1, reset: true)
@@ -183,7 +185,8 @@ public final class KlipyPickerViewModel: ObservableObject {
                             data: [],
                             currentPage: 1,
                             perPage: perPage,
-                            hasNext: false
+                            hasNext: false,
+                            meta: nil
                         )
                     }
                 } else {
@@ -200,6 +203,7 @@ public final class KlipyPickerViewModel: ObservableObject {
 
                 currentPage = pageResult.currentPage
                 hasNextPage = pageResult.hasNext
+                layoutMetadata = pageResult.meta
                 lastError = nil
 
                 if reset {

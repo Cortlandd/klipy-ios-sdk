@@ -17,7 +17,7 @@ public struct KlipyAdvertisementView: View {
 
     public var body: some View {
         KlipyWebViewRepresentable(htmlString: advertisement.content)
-            .frame(height: CGFloat(advertisement.height ?? 100))
+            .background(Color(.secondarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
