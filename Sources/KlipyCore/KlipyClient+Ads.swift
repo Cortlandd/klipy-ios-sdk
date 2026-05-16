@@ -21,7 +21,7 @@ public struct KlipyAdParameters: Sendable {
         minWidth: Int = 50,
         maxWidth: Int = 401,
         minHeight: Int = 50,
-        maxHeight: Int = 250,
+        maxHeight: Int = 200,
         language: String? = nil,
         userAgent: String? = nil
     ) {

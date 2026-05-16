@@ -49,16 +49,23 @@ actor KlipyBrowserUserAgentProvider {
 enum KlipyAdRequestContext {
     static func defaultQueryItems(userAgent: String) async -> [String: String] {
         await MainActor.run {
-            let deviceWidth = max(50, Int(UIScreen.main.bounds.width.rounded(.down)))
+            let screenBounds = UIScreen.main.bounds
+            let deviceWidth = max(50, Int((screenBounds.width - 20).rounded(.down)))
+            let screenWidth = Int(screenBounds.width.rounded(.down))
+            let screenHeight = Int(screenBounds.height.rounded(.down))
             var params: [String: String] = [
                 "ad-iframe": "1",
                 "ad-min-width": "50",
                 "ad-max-width": String(deviceWidth),
                 "ad-min-height": "50",
-                "ad-max-height": "250",
+                "ad-max-height": "200",
                 "ad-os": "ios",
                 "ad-osv": UIDevice.current.systemVersion,
                 "ad-make": "apple",
+                "ad-model": "iphone",
+                "ad-device-w": String(screenWidth),
+                "ad-device-h": String(screenHeight),
+                "ad-pxratio": String(Double(UIScreen.main.scale)),
                 "ad-user-agent": userAgent
             ]
 
