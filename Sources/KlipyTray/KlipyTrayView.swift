@@ -59,13 +59,13 @@ public struct KlipyTrayView: View {
                 if store.config.showSearch {
                     searchBar
                         .padding(.horizontal, 12)
-                        .padding(.top, 10)
-                        .padding(.bottom, 10)
+                        .padding(.top, 8)
+                        .padding(.bottom, 8)
                 }
 
                 tabsBar
                     .padding(.horizontal, 12)
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 8)
 
                 if store.config.showCategories, !store.categories.isEmpty {
                     categoriesBar
@@ -207,7 +207,7 @@ public struct KlipyTrayView: View {
                         items: store.mediaItems,
                         metadata: store.layoutMetadata,
                         maxItemsPerRow: store.config.columns,
-                        spacing: 10,
+                        spacing: 2,
                         onLoadMore: { item in
                             if item.id == store.mediaItems.last?.id {
                                 store.send(.loadNextPage)
@@ -226,8 +226,9 @@ public struct KlipyTrayView: View {
                                 .padding(.vertical, 12)
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 12)
+                    .padding(.horizontal, 2)
+                    .padding(.top, 2)
+                    .padding(.bottom, 8)
 
                     if store.isLoading && store.mediaItems.isEmpty {
                         ProgressView()

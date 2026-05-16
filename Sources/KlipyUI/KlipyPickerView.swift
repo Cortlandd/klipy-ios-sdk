@@ -59,7 +59,7 @@ public struct KlipyPickerView: View {
             topHandleBar
 
             // Main content
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 tabSelector
                 searchField
                 content
@@ -69,7 +69,7 @@ public struct KlipyPickerView: View {
             poweredByBar
         }
         .padding(.top, 4)
-        .padding(.bottom, 8)
+        .padding(.bottom, 4)
         .onAppear {
             viewModel.loadInitial()
         }
@@ -215,7 +215,7 @@ public struct KlipyPickerView: View {
             items: viewModel.items,
             metadata: viewModel.layoutMetadata,
             maxItemsPerRow: viewModel.config.columns,
-            spacing: 8,
+            spacing: 2,
             onLoadMore: { item in
                 viewModel.loadMoreIfNeeded(currentItem: item)
             }
@@ -235,7 +235,7 @@ public struct KlipyPickerView: View {
                     .padding(.vertical, 8)
             }
         }
-        .padding(.horizontal, 4)
+        .padding(.top, 2)
     }
 }
 

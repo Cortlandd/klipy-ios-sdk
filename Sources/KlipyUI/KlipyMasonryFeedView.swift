@@ -23,7 +23,7 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
         items: [KlipyContentItem],
         metadata: KlipyPageMeta?,
         maxItemsPerRow: Int,
-        spacing: CGFloat = 8,
+        spacing: CGFloat = 2,
         rowHeightRange: ClosedRange<CGFloat> = 92...190,
         onLoadMore: @escaping (KlipyContentItem) -> Void,
         @ViewBuilder mediaTile: @escaping (KlipyMedia) -> MediaTile,
@@ -69,7 +69,6 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
                     footer
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 4)
             }
         }
     }
