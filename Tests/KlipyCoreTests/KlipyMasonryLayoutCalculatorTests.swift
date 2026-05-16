@@ -20,7 +20,7 @@ final class KlipyMasonryLayoutCalculatorTests: XCTestCase {
 
         let rows = KlipyMasonryLayoutCalculator(
             containerWidth: 360,
-            spacing: 8,
+            spacing: 2,
             rowHeightRange: 92...190,
             maxItemsPerRow: 3,
             metadata: KlipyPageMeta(itemMinWidth: 100, adMaxResizePercent: 30)
@@ -30,6 +30,8 @@ final class KlipyMasonryLayoutCalculatorTests: XCTestCase {
         XCTAssertEqual(rows.first?.items.count, 2)
         XCTAssertNotNil(rows.first?.items[0].item.media)
         XCTAssertNotNil(rows.first?.items[1].item.advertisement)
+        XCTAssertEqual(rows.first?.items[0].width ?? 0, 118, accuracy: 1)
+        XCTAssertEqual(rows.first?.items[1].width ?? 0, 240, accuracy: 1)
     }
 
     func testCalculatorRespectsMinimumTileWidthFromFeedMetadata() {
