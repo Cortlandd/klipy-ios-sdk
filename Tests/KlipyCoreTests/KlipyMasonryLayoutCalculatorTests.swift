@@ -11,49 +11,77 @@ import XCTest
 
 final class KlipyMasonryLayoutCalculatorTests: XCTestCase {
 
-    func testAdvertisementSpansTwoColumnsInThreeColumnFeeds() {
-        let span = KlipyMasonryFeedLayoutPolicy.columnSpan(
-            for: .advertisement(KlipyAdvertisement(content: "https://klipy.com/ad/1", width: 220, height: 140)),
-            maxItemsPerRow: 3
+    func testThreeSquareMediaItemsFillTheContainerWidth() {
+        let calculator = KlipyMasonryLayoutCalculator(
+            containerWidth: 300,
+            horizontalSpacing: 1,
+            minRowHeight: 50,
+            maxRowHeight: 180,
+            maxItemsPerRow: 4
         )
 
-        XCTAssertEqual(span, 2)
+        let rows = calculator.createRows(
+            from: [
+                .media(makeMedia(id: "1", width: 200, height: 200)),
+                .media(makeMedia(id: "2", width: 200, height: 200)),
+                .media(makeMedia(id: "3", width: 200, height: 200))
+            ],
+            metadata: KlipyPageMeta(itemMinWidth: 50, adMaxResizePercent: 20)
+        )
+
+        XCTAssertEqual(rows.count, 1)
+        XCTAssertEqual(rows[0].items.count, 3)
+
+        let lastItem = try XCTUnwrap(rows[0].items.last)
+        XCTAssertEqual(lastItem.xPosition + lastItem.width, 300, accuracy: 0.5)
     }
 
-    func testAdvertisementSpansFullWidthInTwoColumnFeeds() {
-        let span = KlipyMasonryFeedLayoutPolicy.columnSpan(
-            for: .advertisement(KlipyAdvertisement(content: "https://klipy.com/ad/1")),
-            maxItemsPerRow: 2
+    func testAdvertisementInThirdPositionStartsTheNextRow() {
+        let advertisement = KlipyAdvertisement(content: "https://klipy.com/ad/1", width: 320, height: 100)
+        let calculator = KlipyMasonryLayoutCalculator(
+            containerWidth: 320,
+            horizontalSpacing: 1,
+            minRowHeight: 50,
+            maxRowHeight: 180,
+            maxItemsPerRow: 4
         )
 
-        XCTAssertEqual(span, 2)
+        let rows = calculator.createRows(
+            from: [
+                .media(makeMedia(id: "1", width: 200, height: 200)),
+                .media(makeMedia(id: "2", width: 180, height: 180)),
+                .advertisement(advertisement),
+                .media(makeMedia(id: "3", width: 220, height: 220))
+            ],
+            metadata: KlipyPageMeta(itemMinWidth: 50, adMaxResizePercent: 20)
+        )
+
+        XCTAssertEqual(rows.count, 2)
+        XCTAssertEqual(rows[0].items.count, 2)
+        XCTAssertEqual(rows[1].items.first?.contentItem, .advertisement(advertisement))
     }
 
-    func testWideBannerAdvertisementSpansFullWidthInThreeColumnFeeds() {
-        let span = KlipyMasonryFeedLayoutPolicy.columnSpan(
-            for: .advertisement(KlipyAdvertisement(content: "https://klipy.com/ad/1", width: 320, height: 100)),
-            maxItemsPerRow: 3
+    func testAdvertisementKeepsItsDeclaredHeightWhenLeadingARow() {
+        let calculator = KlipyMasonryLayoutCalculator(
+            containerWidth: 320,
+            horizontalSpacing: 1,
+            minRowHeight: 50,
+            maxRowHeight: 180,
+            maxItemsPerRow: 4
         )
 
-        XCTAssertEqual(span, 3)
-    }
-
-    func testMediaAlwaysUsesSingleColumnSpan() {
-        let span = KlipyMasonryFeedLayoutPolicy.columnSpan(
-            for: .media(makeMedia(id: "1", width: 220, height: 220)),
-            maxItemsPerRow: 3
+        let rows = calculator.createRows(
+            from: [
+                .advertisement(KlipyAdvertisement(content: "https://klipy.com/ad/1", width: 320, height: 100)),
+                .media(makeMedia(id: "1", width: 220, height: 220))
+            ],
+            metadata: KlipyPageMeta(itemMinWidth: 50, adMaxResizePercent: 20)
         )
 
-        XCTAssertEqual(span, 1)
-    }
-
-    func testFeedFallsBackToTwoPointSpacingFromTileInset() {
-        let spacing = KlipyMasonryFeedLayoutPolicy.effectiveSpacing(
-            spacing: 0,
-            tileInset: 1
-        )
-
-        XCTAssertEqual(spacing, 2)
+        XCTAssertEqual(rows.count, 1)
+        XCTAssertEqual(rows[0].height, 100, accuracy: 0.5)
+        XCTAssertEqual(rows[0].items[0].height, 100, accuracy: 0.5)
+        XCTAssertEqual(rows[0].items[1].height, 100, accuracy: 0.5)
     }
 
     func testAdvertisementUsesDefaultBannerAspectRatioWhenDimensionsAreMissing() {

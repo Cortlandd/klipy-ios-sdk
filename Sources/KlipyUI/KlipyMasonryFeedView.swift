@@ -7,10 +7,8 @@
 
 import SwiftUI
 import KlipyCore
-import SwiftUIMasonry
 
 public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Footer: View>: View {
-    private let tileInset: CGFloat
     private let items: [KlipyContentItem]
     private let metadata: KlipyPageMeta?
     private let maxItemsPerRow: Int
@@ -25,9 +23,8 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
         items: [KlipyContentItem],
         metadata: KlipyPageMeta?,
         maxItemsPerRow: Int,
-        spacing: CGFloat = 0,
-        tileInset: CGFloat = 1,
-        rowHeightRange: ClosedRange<CGFloat> = 92...190,
+        spacing: CGFloat = 1,
+        rowHeightRange: ClosedRange<CGFloat> = 50...180,
         onLoadMore: @escaping (KlipyContentItem) -> Void,
         @ViewBuilder mediaTile: @escaping (KlipyMedia) -> MediaTile,
         @ViewBuilder advertisementTile: @escaping (KlipyAdvertisement) -> AdvertisementTile,
@@ -36,8 +33,7 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
         self.items = items
         self.metadata = metadata
         self.maxItemsPerRow = max(2, maxItemsPerRow)
-        self.spacing = spacing
-        self.tileInset = tileInset
+        self.spacing = max(0, spacing)
         self.rowHeightRange = rowHeightRange
         self.onLoadMore = onLoadMore
         self.mediaTile = mediaTile
@@ -46,74 +42,81 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                VMasonry(
-                    columns: .fixed(maxItemsPerRow),
-                    horizontalSpacing: layoutSpacing,
-                    verticalSpacing: layoutSpacing,
-                    data: items
-                ) { item in
-                    tileView(for: item)
-                        .onAppear {
-                            onLoadMore(item)
-                        }
-                } columnSpan: { item in
-                    .fixed(KlipyMasonryFeedLayoutPolicy.columnSpan(for: item, maxItemsPerRow: maxItemsPerRow))
-                }
-                .masonryPlacementMode(.fill)
+        GeometryReader { geometry in
+            let rows = makeRows(containerWidth: geometry.size.width)
 
-                footer
+            ScrollView(showsIndicators: false) {
+                LazyVStack(spacing: 0) {
+                    ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                        KlipyMasonryRowView(
+                            row: row,
+                            isLastRow: index == rows.count - 1,
+                            onLoadMore: onLoadMore,
+                            mediaTile: mediaTile,
+                            advertisementTile: advertisementTile
+                        )
+                        .padding(.bottom, spacing)
+                    }
+
+                    footer
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    private var layoutSpacing: CGFloat {
-        KlipyMasonryFeedLayoutPolicy.effectiveSpacing(
-            spacing: spacing,
-            tileInset: tileInset
+    private func makeRows(containerWidth: CGFloat) -> [KlipyMasonryRowLayout] {
+        guard containerWidth > 0 else {
+            return []
+        }
+
+        return KlipyMasonryLayoutCalculator(
+            containerWidth: containerWidth,
+            horizontalSpacing: spacing,
+            minRowHeight: rowHeightRange.lowerBound,
+            maxRowHeight: rowHeightRange.upperBound,
+            maxItemsPerRow: maxItemsPerRow
         )
+        .createRows(from: items, metadata: metadata)
+    }
+}
+
+private struct KlipyMasonryRowView<MediaTile: View, AdvertisementTile: View>: View {
+    let row: KlipyMasonryRowLayout
+    let isLastRow: Bool
+    let onLoadMore: (KlipyContentItem) -> Void
+    let mediaTile: (KlipyMedia) -> MediaTile
+    let advertisementTile: (KlipyAdvertisement) -> AdvertisementTile
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(row.items) { item in
+                tile(for: item)
+                    .frame(width: item.width, height: item.height)
+                    .offset(x: item.xPosition, y: 0)
+                    .onAppear {
+                        guard isLastRow else { return }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            onLoadMore(item.contentItem)
+                        }
+                    }
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: row.height, maxHeight: row.height, alignment: .leading)
     }
 
     @ViewBuilder
-    private func tileView(for item: KlipyContentItem) -> some View {
-        switch item {
+    private func tile(for item: KlipyMasonryLayoutItem) -> some View {
+        switch item.contentItem {
         case .media(let media):
             mediaTile(media)
-                .aspectRatio(media.displayAspectRatio, contentMode: .fit)
+                .frame(width: item.width, height: item.height)
                 .clipped()
 
         case .advertisement(let advertisement):
             advertisementTile(advertisement)
-                .aspectRatio(advertisement.displayAspectRatio, contentMode: .fit)
-                .frame(minHeight: rowHeightRange.lowerBound)
+                .frame(width: item.width, height: item.height)
                 .clipped()
         }
-    }
-}
-
-enum KlipyMasonryFeedLayoutPolicy {
-    static func effectiveSpacing(spacing: CGFloat, tileInset: CGFloat) -> CGFloat {
-        if spacing > 0 {
-            return spacing
-        }
-        return max(tileInset * 2, 0)
-    }
-
-    static func columnSpan(for item: KlipyContentItem, maxItemsPerRow: Int) -> Int {
-        guard let advertisement = item.advertisement else {
-            return 1
-        }
-
-        if maxItemsPerRow >= 3, advertisement.prefersFullWidthBanner {
-            return maxItemsPerRow
-        }
-
-        if maxItemsPerRow >= 3 {
-            return 2
-        }
-
-        return maxItemsPerRow
     }
 }
