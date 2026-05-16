@@ -45,6 +45,12 @@ public extension KlipyAdvertisement {
         }
         return resolvedWidth / resolvedHeight
     }
+
+    var prefersFullWidthBanner: Bool {
+        let resolvedWidth = width ?? 320
+        let resolvedHeight = height ?? 100
+        return resolvedWidth >= 300 || CGFloat(resolvedWidth) / CGFloat(max(resolvedHeight, 1)) >= 3
+    }
 }
 
 /// Mixed content item returned by Klipy feeds, which may contain either media or ads.

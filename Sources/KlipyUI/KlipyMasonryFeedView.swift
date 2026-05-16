@@ -102,8 +102,12 @@ enum KlipyMasonryFeedLayoutPolicy {
     }
 
     static func columnSpan(for item: KlipyContentItem, maxItemsPerRow: Int) -> Int {
-        guard item.advertisement != nil else {
+        guard let advertisement = item.advertisement else {
             return 1
+        }
+
+        if maxItemsPerRow >= 3, advertisement.prefersFullWidthBanner {
+            return maxItemsPerRow
         }
 
         if maxItemsPerRow >= 3 {

@@ -13,7 +13,7 @@ final class KlipyMasonryLayoutCalculatorTests: XCTestCase {
 
     func testAdvertisementSpansTwoColumnsInThreeColumnFeeds() {
         let span = KlipyMasonryFeedLayoutPolicy.columnSpan(
-            for: .advertisement(KlipyAdvertisement(content: "https://klipy.com/ad/1")),
+            for: .advertisement(KlipyAdvertisement(content: "https://klipy.com/ad/1", width: 220, height: 140)),
             maxItemsPerRow: 3
         )
 
@@ -27,6 +27,15 @@ final class KlipyMasonryLayoutCalculatorTests: XCTestCase {
         )
 
         XCTAssertEqual(span, 2)
+    }
+
+    func testWideBannerAdvertisementSpansFullWidthInThreeColumnFeeds() {
+        let span = KlipyMasonryFeedLayoutPolicy.columnSpan(
+            for: .advertisement(KlipyAdvertisement(content: "https://klipy.com/ad/1", width: 320, height: 100)),
+            maxItemsPerRow: 3
+        )
+
+        XCTAssertEqual(span, 3)
     }
 
     func testMediaAlwaysUsesSingleColumnSpan() {
