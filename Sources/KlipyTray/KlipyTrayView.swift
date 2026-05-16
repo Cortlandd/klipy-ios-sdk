@@ -203,44 +203,31 @@ public struct KlipyTrayView: View {
                 }
             } else {
                 ZStack {
-                    ScrollView {
-                        LazyVGrid(
-                          columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: store.config.columns),
-                          spacing: 10
-                        ) {
-                          ForEach(store.mediaItems, id: \.id) { item in
-                            switch item {
-                            case .media(let media):
-                              Button { onSelect(media) } label: {
-                                KlipyTrayCell(item: media)
-                                  .aspectRatio(media.displayAspectRatio, contentMode: .fit)
-                              }
-                              .buttonStyle(.plain)
-                              .onAppear {
-                                if item.id == store.mediaItems.last?.id {
-                                  store.send(.loadNextPage)
-                                }
-                              }
-
-                            case .advertisement(let advertisement):
-                              KlipyAdvertisementView(advertisement: advertisement)
-                                .gridCellColumns(store.config.columns)
-                                .onAppear {
-                                  if item.id == store.mediaItems.last?.id {
-                                    store.send(.loadNextPage)
-                                  }
-                                }
+                    KlipyMasonryFeedView(
+                        items: store.mediaItems,
+                        metadata: store.layoutMetadata,
+                        maxItemsPerRow: store.config.columns,
+                        spacing: 10,
+                        onLoadMore: { item in
+                            if item.id == store.mediaItems.last?.id {
+                                store.send(.loadNextPage)
                             }
-                          }
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 12)
-
+                    ) { media in
+                        Button { onSelect(media) } label: {
+                            KlipyTrayCell(item: media)
+                        }
+                        .buttonStyle(.plain)
+                    } advertisementTile: { advertisement in
+                        KlipyAdvertisementView(advertisement: advertisement)
+                    } footer: {
                         if store.isFetchingNextPage {
                             ProgressView()
                                 .padding(.vertical, 12)
                         }
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 12)
 
                     if store.isLoading && store.mediaItems.isEmpty {
                         ProgressView()
@@ -283,33 +270,38 @@ public struct KlipyTrayView: View {
 }
 
 private struct KlipyTrayCell: View {
-  let item: KlipyMedia
+    let item: KlipyMedia
 
-  var body: some View {
-    GeometryReader { geo in
-      let width = geo.size.width
-      let height = width / max(0.75, min(item.displayAspectRatio, 1.9))
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
 
-      ZStack {
-        RoundedRectangle(cornerRadius: 12, style: .continuous)
-          .fill(Color(.secondarySystemBackground))
+            if let url = item.previewURL {
+                WebImage(url: url)
+                    .resizable()
+                    .indicator(.activity)
+                    .aspectRatio(item.displayAspectRatio, contentMode: .fill)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else {
+                Image(systemName: "photo")
+                    .foregroundColor(.secondary)
+            }
 
-        if let url = item.previewURL {
-          WebImage(url: url)
-            .resizable()
-            .indicator(.activity)
-            .scaledToFill()
-            .frame(width: width, height: height)
-            .clipped()
+            if item.type == .clip {
+                Image(systemName: "play.fill")
+                    .font(.caption2.weight(.bold))
+                    .foregroundColor(.white)
+                    .padding(6)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+                    .padding(6)
+            }
         }
-      }
-      .frame(width: width, height: height)
-      .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
-    .frame(height: 120) // temporary; overridden by parent using `.aspectRatio` below
-  }
 }
-
 
 #if DEBUG
 import SwiftUI

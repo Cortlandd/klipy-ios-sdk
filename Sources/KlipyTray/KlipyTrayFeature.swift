@@ -48,6 +48,7 @@ public struct KlipyTrayFeature: Sendable {
         public var chosenCategory: KlipyCategory? = nil
 
         public var mediaItems: [KlipyContentItem] = []
+        public var layoutMetadata: KlipyPageMeta? = nil
 
         public var searchInput: String = ""
         public var lastSearchedInput: String? = nil
@@ -111,6 +112,7 @@ public struct KlipyTrayFeature: Sendable {
                 state.categories = []
                 state.chosenCategory = nil
                 state.mediaItems = []
+                state.layoutMetadata = nil
                 state.searchInput = ""
                 state.lastSearchedInput = nil
                 state.currentPage = 1
@@ -127,6 +129,7 @@ public struct KlipyTrayFeature: Sendable {
                 state.chosenTab = tab
                 state.chosenCategory = nil
                 state.mediaItems = []
+                state.layoutMetadata = nil
                 state.currentPage = 1
                 state.hasNext = true
                 state.isFetchingNextPage = false
@@ -172,6 +175,7 @@ public struct KlipyTrayFeature: Sendable {
                 guard let tab = state.chosenTab ?? state.mediaTabs.first else { return .none }
 
                 state.mediaItems = []
+                state.layoutMetadata = nil
                 state.currentPage = 1
                 state.hasNext = true
                 state.isFetchingNextPage = false
@@ -201,6 +205,7 @@ public struct KlipyTrayFeature: Sendable {
                 guard state.lastSearchedInput != nil else { return .none }
 
                 state.mediaItems = []
+                state.layoutMetadata = nil
                 state.currentPage = 1
                 state.hasNext = true
                 state.isFetchingNextPage = false
@@ -279,6 +284,7 @@ public struct KlipyTrayFeature: Sendable {
                 }
 
                 state.mediaItems = []
+                state.layoutMetadata = nil
                 state.currentPage = 1
                 state.hasNext = true
                 state.isFetchingNextPage = false
@@ -316,6 +322,7 @@ public struct KlipyTrayFeature: Sendable {
                 } else {
                     state.mediaItems.append(contentsOf: page.data)
                 }
+                state.layoutMetadata = page.meta
                 state.currentPage = page.currentPage
                 state.hasNext = page.hasNext
                 state.isLoading = false
