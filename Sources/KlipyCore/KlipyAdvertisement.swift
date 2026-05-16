@@ -5,6 +5,7 @@
 //  Created by Cortland Walker on 5/15/26.
 //
 
+import CoreGraphics
 import Foundation
 
 /// Advertisement object returned alongside normal Klipy media content.
@@ -34,6 +35,15 @@ public extension KlipyAdvertisement {
 
     var contentURL: URL? {
         URL(string: content)
+    }
+
+    var displayAspectRatio: CGFloat {
+        let resolvedWidth = CGFloat(width ?? 320)
+        let resolvedHeight = CGFloat(height ?? 100)
+        guard resolvedWidth > 0, resolvedHeight > 0 else {
+            return 3.2
+        }
+        return resolvedWidth / resolvedHeight
     }
 }
 
