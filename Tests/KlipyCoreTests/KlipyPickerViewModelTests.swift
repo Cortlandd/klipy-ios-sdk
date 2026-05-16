@@ -165,6 +165,39 @@ final class KlipyPickerViewModelTests: XCTestCase {
         XCTAssertEqual(calls, [.search(kind: .gif, query: "instant", page: 1, perPage: 24, locale: "en-US")])
     }
 
+    func testSearchResultsCanContainAdvertisementsAlongsideMedia() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false),
+            searchResult: .init(
+                data: [
+                    .media(KlipyMedia(id: "12", slug: "first-result", type: .gif, title: "First Result")),
+                    .advertisement(KlipyAdvertisement(content: "https://klipy.com/advertisement/search-slot", width: 320, height: 50)),
+                    .media(KlipyMedia(id: "13", slug: "second-result", type: .gif, title: "Second Result"))
+                ],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            )
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            config: KlipyPickerConfig(initialTab: .gifs),
+            locale: "en-US",
+            searchDebounceNanoseconds: 10_000_000
+        )
+
+        viewModel.updateQuery("party")
+        await waitUntil { !viewModel.isLoading && viewModel.items.count == 3 }
+
+        XCTAssertEqual(viewModel.items[0].media?.slug, "first-result")
+        XCTAssertEqual(viewModel.items[1].advertisement?.content, "https://klipy.com/advertisement/search-slot")
+        XCTAssertEqual(viewModel.items[2].media?.slug, "second-result")
+
+        let calls = await loader.calls
+        XCTAssertEqual(calls, [.search(kind: .gif, query: "party", page: 1, perPage: 24, locale: "en-US")])
+    }
+
     func testChangingTabsLoadsTheNewMediaType() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(

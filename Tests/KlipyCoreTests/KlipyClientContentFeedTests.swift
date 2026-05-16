@@ -102,4 +102,39 @@ final class KlipyClientContentFeedTests: XCTestCase {
 
         XCTAssertEqual(page.data.map(\.slug), ["wave", "party"])
     }
+
+    func testSearchContentPreservesAdvertisementsInFeedOrder() async throws {
+        let url = URL(string: "https://api.klipy.com/api/v1/\(apiKey)/gifs/search")!
+        let responseBody = """
+        {
+          "result": true,
+          "data": {
+            "data": [
+              { "id": "10", "slug": "cheer", "type": "gif", "title": "Cheer" },
+              { "content": "https://klipy.com/advertisement/search-example", "width": 320, "height": 50, "type": "ad" },
+              { "id": "11", "slug": "celebrate", "type": "gif", "title": "Celebrate" }
+            ],
+            "current_page": 1,
+            "per_page": 24,
+            "has_next": false
+          }
+        }
+        """.data(using: .utf8)!
+
+        let mock = Mock(
+            url: url,
+            ignoreQuery: true,
+            contentType: .json,
+            statusCode: 200,
+            data: [.get: responseBody]
+        )
+        mock.register()
+
+        let page = try await client.searchContent(kind: .gif, query: "celebrate", page: 1, perPage: 24, locale: "en-US")
+
+        XCTAssertEqual(page.data.count, 3)
+        XCTAssertEqual(page.data[0].media?.slug, "cheer")
+        XCTAssertEqual(page.data[1].advertisement?.content, "https://klipy.com/advertisement/search-example")
+        XCTAssertEqual(page.data[2].media?.slug, "celebrate")
+    }
 }
