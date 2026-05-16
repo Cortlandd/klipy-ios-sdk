@@ -20,7 +20,7 @@ struct KlipyPickerSheet: View {
                 client: client,
                 config: KlipyPickerConfig(
                     mediaTabs: [.gifs, .stickers, .clips, .memes, .emojis],
-                    columns: 3,
+                    maxItemsPerRow: 3,
                     showRecents: false,
                     showTrending: true,
                     initialTab: .gifs

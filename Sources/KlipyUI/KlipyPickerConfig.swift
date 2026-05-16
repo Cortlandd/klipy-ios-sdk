@@ -9,14 +9,17 @@ import Foundation
 
 /// Configuration for `KlipyPickerView`.
 ///
-/// Use this to control which tabs are available, how the grid is laid out,
+/// Use this to control which tabs are available, how dense the media feed is,
 /// and what the picker should load when the search query is empty.
 public struct KlipyPickerConfig: Equatable, Sendable {
     /// Tabs to show in the picker.
     public var mediaTabs: [KlipyPickerMediaTab]
 
-    /// Number of columns to use in the picker grid.
-    public var columns: Int
+    /// The maximum number of items the picker feed will try to place in a row.
+    ///
+    /// The picker now uses a masonry feed rather than a strict grid,
+    /// so this value controls feed density instead of a fixed column count.
+    public var maxItemsPerRow: Int
 
     /// Whether to use recents when the search query is empty.
     public var showRecents: Bool
@@ -31,16 +34,39 @@ public struct KlipyPickerConfig: Equatable, Sendable {
 
     public init(
         mediaTabs: [KlipyPickerMediaTab] = [.gifs, .stickers, .clips, .memes, .emojis],
-        columns: Int = 3,
+        maxItemsPerRow: Int = 3,
         showRecents: Bool = false,
         showTrending: Bool = true,
         initialTab: KlipyPickerMediaTab = .gifs
     ) {
         self.mediaTabs = mediaTabs
-        self.columns = max(2, columns)
+        self.maxItemsPerRow = max(2, maxItemsPerRow)
         self.showRecents = showRecents
         self.showTrending = showTrending
         self.initialTab = initialTab
+    }
+
+    @available(*, deprecated, renamed: "maxItemsPerRow", message: "The picker uses a masonry feed now, so this value controls feed density instead of a strict grid column count.")
+    public var columns: Int {
+        get { maxItemsPerRow }
+        set { maxItemsPerRow = max(2, newValue) }
+    }
+
+    @available(*, deprecated, message: "Use init(mediaTabs:maxItemsPerRow:showRecents:showTrending:initialTab:) instead.")
+    public init(
+        mediaTabs: [KlipyPickerMediaTab],
+        columns: Int,
+        showRecents: Bool,
+        showTrending: Bool,
+        initialTab: KlipyPickerMediaTab
+    ) {
+        self.init(
+            mediaTabs: mediaTabs,
+            maxItemsPerRow: columns,
+            showRecents: showRecents,
+            showTrending: showTrending,
+            initialTab: initialTab
+        )
     }
 
     public var emptyQueryFeed: EmptyQueryFeed {

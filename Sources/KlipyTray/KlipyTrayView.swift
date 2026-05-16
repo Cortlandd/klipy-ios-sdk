@@ -206,7 +206,7 @@ public struct KlipyTrayView: View {
                     KlipyMasonryFeedView(
                         items: store.mediaItems,
                         metadata: store.layoutMetadata,
-                        maxItemsPerRow: store.config.columns,
+                        maxItemsPerRow: store.config.maxItemsPerRow,
                         spacing: 0,
                         onLoadMore: { item in
                             if item.id == store.mediaItems.last?.id {
@@ -316,7 +316,7 @@ struct KlipyTrayView_Previews: PreviewProvider {
                 config: .init(
                     mediaTabs: [.gifs, .stickers, .clips, .memes, .emojis],
                     initialTab: .gifs,
-                    columns: 3,
+                    maxItemsPerRow: 3,
                     showTrending: true,
                     showRecents: false,
                     showCategories: true,
@@ -332,7 +332,7 @@ struct KlipyTrayView_Previews: PreviewProvider {
                 config: .init(
                     mediaTabs: [.gifs, .stickers],
                     initialTab: .stickers,
-                    columns: 4,
+                    maxItemsPerRow: 4,
                     showTrending: false,
                     showRecents: true,
                     showCategories: false,

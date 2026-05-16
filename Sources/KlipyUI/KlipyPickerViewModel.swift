@@ -43,7 +43,7 @@ public final class KlipyPickerViewModel: ObservableObject {
         let resolvedTabs = config.mediaTabs.isEmpty ? KlipyPickerMediaTab.allCases : config.mediaTabs
         self.config = KlipyPickerConfig(
             mediaTabs: resolvedTabs,
-            columns: config.columns,
+            maxItemsPerRow: config.maxItemsPerRow,
             showRecents: config.showRecents,
             showTrending: config.showTrending,
             initialTab: resolvedTabs.contains(config.initialTab) ? config.initialTab : resolvedTabs[0]

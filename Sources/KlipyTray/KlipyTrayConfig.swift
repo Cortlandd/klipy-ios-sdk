@@ -16,8 +16,11 @@ public struct KlipyTrayConfig: Equatable, Sendable {
     /// The initial tab to select.
     public var initialTab: KlipyPickerMediaTab
 
-    /// Grid column count.
-    public var columns: Int
+    /// The maximum number of items the tray feed will try to place in a row.
+    ///
+    /// The tray uses the same masonry feed as the standalone picker,
+    /// so this controls feed density instead of a strict grid column count.
+    public var maxItemsPerRow: Int
 
     /// When search query is empty, load trending first if enabled.
     public var showTrending: Bool
@@ -37,7 +40,7 @@ public struct KlipyTrayConfig: Equatable, Sendable {
     public init(
         mediaTabs: [KlipyPickerMediaTab] = [.gifs, .stickers, .clips, .memes, .emojis],
         initialTab: KlipyPickerMediaTab = .gifs,
-        columns: Int = 3,
+        maxItemsPerRow: Int = 3,
         showTrending: Bool = true,
         showRecents: Bool = false,
         showCategories: Bool = false,
@@ -46,12 +49,41 @@ public struct KlipyTrayConfig: Equatable, Sendable {
     ) {
         self.mediaTabs = mediaTabs
         self.initialTab = initialTab
-        self.columns = max(2, columns)
+        self.maxItemsPerRow = max(2, maxItemsPerRow)
         self.showTrending = showTrending
         self.showRecents = showRecents
         self.showCategories = showCategories
         self.showSearch = showSearch
         self.brandURL = brandURL
+    }
+
+    @available(*, deprecated, renamed: "maxItemsPerRow", message: "The tray uses a masonry feed now, so this value controls feed density instead of a strict grid column count.")
+    public var columns: Int {
+        get { maxItemsPerRow }
+        set { maxItemsPerRow = max(2, newValue) }
+    }
+
+    @available(*, deprecated, message: "Use init(mediaTabs:initialTab:maxItemsPerRow:showTrending:showRecents:showCategories:showSearch:brandURL:) instead.")
+    public init(
+        mediaTabs: [KlipyPickerMediaTab],
+        initialTab: KlipyPickerMediaTab,
+        columns: Int,
+        showTrending: Bool,
+        showRecents: Bool,
+        showCategories: Bool,
+        showSearch: Bool,
+        brandURL: URL?
+    ) {
+        self.init(
+            mediaTabs: mediaTabs,
+            initialTab: initialTab,
+            maxItemsPerRow: columns,
+            showTrending: showTrending,
+            showRecents: showRecents,
+            showCategories: showCategories,
+            showSearch: showSearch,
+            brandURL: brandURL
+        )
     }
 
     /// Feed to use when the search query is empty.

@@ -214,7 +214,7 @@ public struct KlipyPickerView: View {
         KlipyMasonryFeedView(
             items: viewModel.items,
             metadata: viewModel.layoutMetadata,
-            maxItemsPerRow: viewModel.config.columns,
+            maxItemsPerRow: viewModel.config.maxItemsPerRow,
             spacing: 0,
             onLoadMore: { item in
                 viewModel.loadMoreIfNeeded(currentItem: item)
@@ -289,7 +289,7 @@ struct KlipyPickerView_Previews: PreviewProvider {
             client: client,
             config: KlipyPickerConfig(
                 mediaTabs: [.gifs, .stickers, .clips, .memes, .emojis],
-                columns: 3,
+                maxItemsPerRow: 3,
                 showRecents: false,
                 showTrending: true,
                 initialTab: .gifs
