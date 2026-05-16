@@ -91,7 +91,8 @@ public extension KlipyPage where Item == KlipyContentItem {
             data: mediaOnly,
             currentPage: currentPage,
             perPage: perPage,
-            hasNext: hasNext
+            hasNext: hasNext,
+            meta: meta
         )
     }
 }

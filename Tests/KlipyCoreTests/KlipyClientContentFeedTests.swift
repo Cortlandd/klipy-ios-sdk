@@ -47,6 +47,10 @@ final class KlipyClientContentFeedTests: XCTestCase {
               { "content": "https://klipy.com/advertisement/example", "width": 320, "height": 100, "type": "ad" },
               { "id": "2", "slug": "party", "type": "gif", "title": "Party" }
             ],
+            "meta": {
+              "item_min_width": 110,
+              "ad_max_resize_percent": 30
+            },
             "current_page": 1,
             "per_page": 24,
             "has_next": false
@@ -69,6 +73,8 @@ final class KlipyClientContentFeedTests: XCTestCase {
         XCTAssertEqual(page.data[0].media?.slug, "wave")
         XCTAssertEqual(page.data[1].advertisement?.content, "https://klipy.com/advertisement/example")
         XCTAssertEqual(page.data[2].media?.slug, "party")
+        XCTAssertEqual(page.meta?.itemMinWidth, 110)
+        XCTAssertEqual(page.meta?.adMaxResizePercent, 30)
     }
 
     func testLegacyTrendingAPIFiltersAdvertisementsOutOfMediaResults() async throws {
@@ -101,6 +107,8 @@ final class KlipyClientContentFeedTests: XCTestCase {
         let page = try await client.trending(kind: .gif, page: 1, perPage: 24, locale: "en-US")
 
         XCTAssertEqual(page.data.map(\.slug), ["wave", "party"])
+        XCTAssertEqual(page.meta?.itemMinWidth, 110)
+        XCTAssertEqual(page.meta?.adMaxResizePercent, 30)
     }
 
     func testSearchContentPreservesAdvertisementsInFeedOrder() async throws {
