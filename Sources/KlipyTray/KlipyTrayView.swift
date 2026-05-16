@@ -275,8 +275,7 @@ private struct KlipyTrayCell: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+            Color(.secondarySystemBackground)
 
             if let url = item.previewURL {
                 WebImage(url: url)
@@ -284,7 +283,6 @@ private struct KlipyTrayCell: View {
                     .indicator(.activity)
                     .aspectRatio(item.displayAspectRatio, contentMode: .fill)
                     .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             } else {
                 Image(systemName: "photo")
                     .foregroundColor(.secondary)
@@ -300,7 +298,7 @@ private struct KlipyTrayCell: View {
                     .padding(6)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .clipped()
     }
 }
 

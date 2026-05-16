@@ -247,8 +247,7 @@ struct KlipyThumbnailView: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(.systemGray6))
+            Color(.systemGray6)
 
             if let url = media.previewURL {
                 WebImage(url: url)
@@ -256,7 +255,6 @@ struct KlipyThumbnailView: View {
                     .indicator(.activity)
                     .aspectRatio(media.displayAspectRatio, contentMode: .fill)
                     .clipped()
-                    .cornerRadius(10)
             } else {
                 Image(systemName: "photo")
                     .foregroundColor(.secondary)
@@ -273,6 +271,7 @@ struct KlipyThumbnailView: View {
             }
         }
         .aspectRatio(media.displayAspectRatio, contentMode: .fit)
+        .clipped()
     }
 }
 
