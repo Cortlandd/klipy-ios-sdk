@@ -17,12 +17,14 @@ public struct KlipyAdvertisementView: View {
 
     public var body: some View {
         KlipyWebViewRepresentable(htmlString: advertisement.content)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.secondarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .stroke(Color(.separator).opacity(0.25), lineWidth: 1)
             )
+            .clipped()
             .accessibilityLabel("Sponsored content")
     }
 }

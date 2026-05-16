@@ -10,6 +10,69 @@ import UIKit
 
 private let adIframeQueryName = "ad-iframe"
 private let adIframeQueryValue = "1"
+private let fullBleedViewportHTML = """
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+"""
+private let fullBleedStyleHTML = """
+<style>
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    background: transparent !important;
+}
+body {
+    position: relative !important;
+}
+iframe, img, video, canvas, object, embed, svg {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+}
+</style>
+"""
+private let fullBleedJavaScriptSource = """
+(function() {
+    function applyFullBleedLayout() {
+        var root = document.documentElement;
+        var body = document.body;
+        [root, body].forEach(function(element) {
+            if (!element) { return; }
+            element.style.margin = '0';
+            element.style.padding = '0';
+            element.style.width = '100%';
+            element.style.height = '100%';
+            element.style.overflow = 'hidden';
+            element.style.background = 'transparent';
+        });
+
+        var media = document.querySelectorAll('iframe, img, video, canvas, object, embed, svg');
+        media.forEach(function(element) {
+            element.setAttribute('scrolling', 'no');
+            element.style.display = 'block';
+            element.style.width = '100%';
+            element.style.height = '100%';
+            element.style.maxWidth = '100%';
+            element.style.maxHeight = '100%';
+            element.style.margin = '0';
+            element.style.padding = '0';
+            element.style.border = '0';
+            element.style.overflow = 'hidden';
+        });
+    }
+
+    applyFullBleedLayout();
+    window.addEventListener('load', applyFullBleedLayout);
+})();
+"""
 
 public final class KlipyWebView: UIView {
     private var webView: WKWebView!
@@ -17,13 +80,22 @@ public final class KlipyWebView: UIView {
     public init() {
         super.init(frame: .zero)
 
-        let webConfiguration = WKWebViewConfiguration()
+        let webConfiguration = Self.makeWebConfiguration()
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.frame = frame
 
         webView.navigationDelegate = self
-        webView.isOpaque = true
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.backgroundColor = .clear
+        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.bounces = false
+        webView.scrollView.showsVerticalScrollIndicator = false
+        webView.scrollView.showsHorizontalScrollIndicator = false
+        webView.scrollView.contentInset = .zero
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        clipsToBounds = true
 
         addSubview(webView)
         layoutWebView()
@@ -45,7 +117,7 @@ public final class KlipyWebView: UIView {
             return
         }
 
-        webView.loadHTMLString(htmlString, baseURL: nil)
+        webView.loadHTMLString(normalizedHTMLDocument(from: htmlString), baseURL: nil)
     }
 
     private func layoutWebView() {
@@ -55,6 +127,20 @@ public final class KlipyWebView: UIView {
             webView.leadingAnchor.constraint(equalTo: leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
+    }
+
+    private static func makeWebConfiguration() -> WKWebViewConfiguration {
+        let configuration = WKWebViewConfiguration()
+        let controller = WKUserContentController()
+        controller.addUserScript(
+            WKUserScript(
+                source: fullBleedJavaScriptSource,
+                injectionTime: .atDocumentEnd,
+                forMainFrameOnly: true
+            )
+        )
+        configuration.userContentController = controller
+        return configuration
     }
 }
 
@@ -94,5 +180,24 @@ extension KlipyWebView {
         }
 
         return components.url
+    }
+
+    func normalizedHTMLDocument(from value: String) -> String {
+        if value.localizedCaseInsensitiveContains("<html") {
+            return value
+        }
+
+        return """
+        <!doctype html>
+        <html>
+        <head>
+        \(fullBleedViewportHTML)
+        \(fullBleedStyleHTML)
+        </head>
+        <body>
+        \(value)
+        </body>
+        </html>
+        """
     }
 }
