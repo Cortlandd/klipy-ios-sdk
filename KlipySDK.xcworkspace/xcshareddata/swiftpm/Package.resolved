@@ -155,6 +155,15 @@
       }
     },
     {
+      "identity" : "swiftuimasonry",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ciaranrobrien/SwiftUIMasonry.git",
+      "state" : {
+        "revision" : "6cb48d6912b38edfa06d312020b8a1bf4af4094f",
+        "version" : "1.0.0"
+      }
+    },
+    {
       "identity" : "xctest-dynamic-overlay",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",

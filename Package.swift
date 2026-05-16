@@ -30,6 +30,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.0")),
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", .upToNextMajor(from: "1.25.5")),
+        .package(path: "Vendor/SwiftUIMasonry"),
         .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "3.0.0"),
         .package(url: "https://github.com/SDWebImage/SDWebImageWebPCoder.git", from: "0.3.0")
     ],
@@ -42,7 +43,7 @@ let package = Package(
         ),
         .target(
             name: "KlipyUI",
-            dependencies: ["KlipyCore", "SDWebImageSwiftUI", "SDWebImageWebPCoder"],
+            dependencies: ["KlipyCore", "SDWebImageSwiftUI", "SDWebImageWebPCoder", "SwiftUIMasonry"],
             path: "Sources/KlipyUI",
             resources: [.process("Resources/Media.xcassets")]
         ),
