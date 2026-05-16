@@ -30,4 +30,24 @@ final class KlipyWebViewTests: XCTestCase {
         XCTAssertEqual(iframeItems.count, 1)
         XCTAssertEqual(iframeItems.first?.value, "1")
     }
+
+    func testNormalizedHTMLDocumentWrapsRawHTMLInFullBleedDocument() {
+        let webView = KlipyWebView()
+
+        let document = webView.normalizedHTMLDocument(from: "<iframe src=\"https://klipy.com/ad\"></iframe>")
+
+        XCTAssertTrue(document.contains("<!doctype html>"))
+        XCTAssertTrue(document.contains("overflow: hidden !important"))
+        XCTAssertTrue(document.contains("width: 100% !important"))
+        XCTAssertTrue(document.contains("height: 100% !important"))
+    }
+
+    func testNormalizedHTMLDocumentKeepsExistingHTMLDocumentUnchanged() {
+        let webView = KlipyWebView()
+        let input = "<html><body><div>Ad</div></body></html>"
+
+        let document = webView.normalizedHTMLDocument(from: input)
+
+        XCTAssertEqual(document, input)
+    }
 }
