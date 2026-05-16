@@ -47,7 +47,7 @@ public struct KlipyTrayFeature: Sendable {
         public var categories: [KlipyCategory] = []
         public var chosenCategory: KlipyCategory? = nil
 
-        public var mediaItems: [KlipyMedia] = []
+        public var mediaItems: [KlipyContentItem] = []
 
         public var searchInput: String = ""
         public var lastSearchedInput: String? = nil
@@ -79,7 +79,7 @@ public struct KlipyTrayFeature: Sendable {
         case dismissError
 
         case _loadedCategories([KlipyCategory])
-        case _loadedPage(KlipyPage<KlipyMedia>, reset: Bool)
+        case _loadedPage(KlipyPage<KlipyContentItem>, reset: Bool)
         case _failed(String, isOffline: Bool)
     }
 
@@ -362,27 +362,27 @@ public struct KlipyTrayFeature: Sendable {
                     return
                 }
 
-                let result: KlipyPage<KlipyMedia>
+                let result: KlipyPage<KlipyContentItem>
 
                 if filter.isEmpty {
                     // empty -> trending/recent
                     switch config.emptyQueryFeed {
                     case .trending:
-                        result = try await client.trending(kind: kind, page: page, perPage: perPage, locale: locale)
+                        result = try await client.trendingContent(kind: kind, page: page, perPage: perPage, locale: locale)
                     case .recent:
-                        result = try await client.recent(kind: kind, page: page, perPage: perPage, locale: locale, adParams: nil)
+                        result = try await client.recentContent(kind: kind, page: page, perPage: perPage, locale: locale, adParams: nil)
                     case .none:
                         result = KlipyPage(data: [], currentPage: 1, perPage: (perPage ?? 24), hasNext: false)
                     }
                 } else {
                     // If the chip is literally "trending" or "recent", route to those endpoints
                     if filter.caseInsensitiveCompare("trending") == .orderedSame {
-                        result = try await client.trending(kind: kind, page: page, perPage: perPage, locale: locale)
+                        result = try await client.trendingContent(kind: kind, page: page, perPage: perPage, locale: locale)
                     } else if filter.caseInsensitiveCompare("recent") == .orderedSame {
-                        result = try await client.recent(kind: kind, page: page, perPage: perPage, locale: locale, adParams: nil)
+                        result = try await client.recentContent(kind: kind, page: page, perPage: perPage, locale: locale, adParams: nil)
                     } else {
                         // Otherwise: search using the chip string or typed query
-                        result = try await client.search(kind: kind, query: filter, page: page, perPage: perPage, locale: locale)
+                        result = try await client.searchContent(kind: kind, query: filter, page: page, perPage: perPage, locale: locale)
                     }
                 }
 

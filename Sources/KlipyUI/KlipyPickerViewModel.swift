@@ -11,7 +11,7 @@ import KlipyCore
 
 @MainActor
 public final class KlipyPickerViewModel: ObservableObject {
-    @Published public private(set) var items: [KlipyMedia] = []
+    @Published public private(set) var items: [KlipyContentItem] = []
     @Published public private(set) var isLoading: Bool = false
     @Published public private(set) var lastError: KlipyError?
 
@@ -131,7 +131,7 @@ public final class KlipyPickerViewModel: ObservableObject {
     }
 
     /// Called by the view when a cell appears.
-    public func loadMoreIfNeeded(currentItem: KlipyMedia) {
+    public func loadMoreIfNeeded(currentItem: KlipyContentItem) {
         guard hasNextPage,
               !isLoadingMore,
               !isLoading,
@@ -159,19 +159,19 @@ public final class KlipyPickerViewModel: ObservableObject {
             guard let self else { return }
 
             do {
-                let pageResult: KlipyPage<KlipyMedia>
+                let pageResult: KlipyPage<KlipyContentItem>
 
                 if trimmedQuery.isEmpty {
                     switch config.emptyQueryFeed {
                     case .trending:
-                        pageResult = try await client.trending(
+                        pageResult = try await client.trendingContent(
                             kind: selectedTab.mediaType,
                             page: page,
                             perPage: perPage,
                             locale: locale
                         )
                     case .recent:
-                        pageResult = try await client.recent(
+                        pageResult = try await client.recentContent(
                             kind: selectedTab.mediaType,
                             page: page,
                             perPage: perPage,
@@ -187,7 +187,7 @@ public final class KlipyPickerViewModel: ObservableObject {
                         )
                     }
                 } else {
-                    pageResult = try await client.search(
+                    pageResult = try await client.searchContent(
                         kind: selectedTab.mediaType,
                         query: trimmedQuery,
                         page: page,

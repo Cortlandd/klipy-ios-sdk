@@ -218,15 +218,25 @@ public struct KlipyPickerView: View {
     private var scrollGrid: some View {
         ScrollView {
             LazyVGrid(columns: gridColumns, alignment: .center, spacing: 4) {
-                ForEach(viewModel.items, id: \.id) { media in
-                    Button {
-                        onSelect(media)
-                    } label: {
-                        KlipyThumbnailView(media: media, isClipsMuted: $isClipsMuted)
-                    }
-                    .buttonStyle(.plain)
-                    .onAppear {
-                        viewModel.loadMoreIfNeeded(currentItem: media)
+                ForEach(viewModel.items, id: \.id) { item in
+                    switch item {
+                    case .media(let media):
+                        Button {
+                            onSelect(media)
+                        } label: {
+                            KlipyThumbnailView(media: media, isClipsMuted: $isClipsMuted)
+                        }
+                        .buttonStyle(.plain)
+                        .onAppear {
+                            viewModel.loadMoreIfNeeded(currentItem: item)
+                        }
+
+                    case .advertisement(let advertisement):
+                        KlipyAdvertisementView(advertisement: advertisement)
+                            .gridCellColumns(viewModel.config.columns)
+                            .onAppear {
+                                viewModel.loadMoreIfNeeded(currentItem: item)
+                            }
                     }
                 }
 

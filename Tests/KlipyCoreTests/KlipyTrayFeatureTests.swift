@@ -14,9 +14,9 @@ import ComposableArchitecture
 private struct MockKlipyTrayLoader: KlipyTrayLoading {
     var configuration: KlipyConfiguration
     var categoriesResult: [KlipyCategory] = []
-    var trendingResult: KlipyPage<KlipyMedia>
-    var recentResult: KlipyPage<KlipyMedia>
-    var searchResult: KlipyPage<KlipyMedia>
+    var trendingResult: KlipyPage<KlipyContentItem>
+    var recentResult: KlipyPage<KlipyContentItem>
+    var searchResult: KlipyPage<KlipyContentItem>
     var categoriesError: Error?
     var trendingError: Error?
     var recentError: Error?
@@ -25,9 +25,9 @@ private struct MockKlipyTrayLoader: KlipyTrayLoading {
     init(
         configuration: KlipyConfiguration = .init(apiKey: "demo-key"),
         categoriesResult: [KlipyCategory] = [],
-        trendingResult: KlipyPage<KlipyMedia>,
-        recentResult: KlipyPage<KlipyMedia>? = nil,
-        searchResult: KlipyPage<KlipyMedia>? = nil,
+        trendingResult: KlipyPage<KlipyContentItem>,
+        recentResult: KlipyPage<KlipyContentItem>? = nil,
+        searchResult: KlipyPage<KlipyContentItem>? = nil,
         categoriesError: Error? = nil,
         trendingError: Error? = nil,
         recentError: Error? = nil,
@@ -51,38 +51,38 @@ private struct MockKlipyTrayLoader: KlipyTrayLoading {
         categoriesResult
     }
 
-    func trending(
+    func trendingContent(
         kind: KlipyMediaType,
         page: Int?,
         perPage: Int?,
         locale: String?
-    ) async throws -> KlipyPage<KlipyMedia> {
+    ) async throws -> KlipyPage<KlipyContentItem> {
         if let trendingError {
             throw trendingError
         }
         trendingResult
     }
 
-    func recent(
+    func recentContent(
         kind: KlipyMediaType,
         page: Int?,
         perPage: Int?,
         locale: String?,
         adParams: [String : String]?
-    ) async throws -> KlipyPage<KlipyMedia> {
+    ) async throws -> KlipyPage<KlipyContentItem> {
         if let recentError {
             throw recentError
         }
         recentResult
     }
 
-    func search(
+    func searchContent(
         kind: KlipyMediaType,
         query: String,
         page: Int?,
         perPage: Int?,
         locale: String?
-    ) async throws -> KlipyPage<KlipyMedia> {
+    ) async throws -> KlipyPage<KlipyContentItem> {
         if let searchError {
             throw searchError
         }
@@ -96,7 +96,7 @@ final class KlipyTrayFeatureTests: XCTestCase {
     func testOnAppearLoadsTheConfiguredInitialTab() async {
         let loader = MockKlipyTrayLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "1", slug: "stickers-first", type: .sticker, title: "Sticker")],
+                data: [.media(KlipyMedia(id: "1", slug: "stickers-first", type: .sticker, title: "Sticker"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: true
@@ -144,7 +144,7 @@ final class KlipyTrayFeatureTests: XCTestCase {
     func testClearingSearchInputReloadsTheDefaultFeed() async {
         let loader = MockKlipyTrayLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "2", slug: "back-to-trending", type: .gif, title: "Trending")],
+                data: [.media(KlipyMedia(id: "2", slug: "back-to-trending", type: .gif, title: "Trending"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
@@ -158,7 +158,7 @@ final class KlipyTrayFeatureTests: XCTestCase {
                 state.chosenTab = .gifs
                 state.lastSearchedInput = "hello"
                 state.searchInput = "hello"
-                state.mediaItems = [KlipyMedia(id: "existing", slug: "existing", type: .gif, title: "Existing")]
+                state.mediaItems = [.media(KlipyMedia(id: "existing", slug: "existing", type: .gif, title: "Existing"))]
                 return state
             }()
         ) {

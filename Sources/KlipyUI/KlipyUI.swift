@@ -10,28 +10,28 @@ import Foundation
 import KlipyCore
 
 public protocol KlipyMediaLoading: Sendable {
-    func trending(
+    func trendingContent(
         kind: KlipyMediaType,
         page: Int?,
         perPage: Int?,
         locale: String?
-    ) async throws -> KlipyPage<KlipyMedia>
+    ) async throws -> KlipyPage<KlipyContentItem>
 
-    func recent(
+    func recentContent(
         kind: KlipyMediaType,
         page: Int?,
         perPage: Int?,
         locale: String?,
         adParams: [String: String]?
-    ) async throws -> KlipyPage<KlipyMedia>
+    ) async throws -> KlipyPage<KlipyContentItem>
 
-    func search(
+    func searchContent(
         kind: KlipyMediaType,
         query: String,
         page: Int?,
         perPage: Int?,
         locale: String?
-    ) async throws -> KlipyPage<KlipyMedia>
+    ) async throws -> KlipyPage<KlipyContentItem>
 }
 
 extension KlipyClient: KlipyMediaLoading {}

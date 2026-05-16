@@ -209,15 +209,27 @@ public struct KlipyTrayView: View {
                           spacing: 10
                         ) {
                           ForEach(store.mediaItems, id: \.id) { item in
-                            Button { onSelect(item) } label: {
-                              KlipyTrayCell(item: item)
-                                .aspectRatio(item.displayAspectRatio, contentMode: .fit)
-                            }
-                            .buttonStyle(.plain)
-                            .onAppear {
-                              if item.id == store.mediaItems.last?.id {
-                                store.send(.loadNextPage)
+                            switch item {
+                            case .media(let media):
+                              Button { onSelect(media) } label: {
+                                KlipyTrayCell(item: media)
+                                  .aspectRatio(media.displayAspectRatio, contentMode: .fit)
                               }
+                              .buttonStyle(.plain)
+                              .onAppear {
+                                if item.id == store.mediaItems.last?.id {
+                                  store.send(.loadNextPage)
+                                }
+                              }
+
+                            case .advertisement(let advertisement):
+                              KlipyAdvertisementView(advertisement: advertisement)
+                                .gridCellColumns(store.config.columns)
+                                .onAppear {
+                                  if item.id == store.mediaItems.last?.id {
+                                    store.send(.loadNextPage)
+                                  }
+                                }
                             }
                           }
                         }

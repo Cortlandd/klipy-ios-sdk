@@ -17,15 +17,15 @@ private actor MockKlipyMediaLoader: KlipyMediaLoading {
     }
 
     private(set) var calls: [Call] = []
-    var trendingResult: KlipyPage<KlipyMedia>
-    var searchResult: KlipyPage<KlipyMedia>
+    var trendingResult: KlipyPage<KlipyContentItem>
+    var searchResult: KlipyPage<KlipyContentItem>
     var trendingError: Error?
     var recentError: Error?
     var searchError: Error?
 
     init(
-        trendingResult: KlipyPage<KlipyMedia>,
-        searchResult: KlipyPage<KlipyMedia>,
+        trendingResult: KlipyPage<KlipyContentItem>,
+        searchResult: KlipyPage<KlipyContentItem>,
         trendingError: Error? = nil,
         recentError: Error? = nil,
         searchError: Error? = nil
@@ -37,12 +37,12 @@ private actor MockKlipyMediaLoader: KlipyMediaLoading {
         self.searchError = searchError
     }
 
-    func trending(
+    func trendingContent(
         kind: KlipyMediaType,
         page: Int?,
         perPage: Int?,
         locale: String?
-    ) async throws -> KlipyPage<KlipyMedia> {
+    ) async throws -> KlipyPage<KlipyContentItem> {
         calls.append(.trending(kind: kind, page: page, perPage: perPage, locale: locale))
         if let trendingError {
             throw trendingError
@@ -50,13 +50,13 @@ private actor MockKlipyMediaLoader: KlipyMediaLoading {
         return trendingResult
     }
 
-    func search(
+    func searchContent(
         kind: KlipyMediaType,
         query: String,
         page: Int?,
         perPage: Int?,
         locale: String?
-    ) async throws -> KlipyPage<KlipyMedia> {
+    ) async throws -> KlipyPage<KlipyContentItem> {
         calls.append(.search(kind: kind, query: query, page: page, perPage: perPage, locale: locale))
         if let searchError {
             throw searchError
@@ -64,13 +64,13 @@ private actor MockKlipyMediaLoader: KlipyMediaLoading {
         return searchResult
     }
 
-    func recent(
+    func recentContent(
         kind: KlipyMediaType,
         page: Int?,
         perPage: Int?,
         locale: String?,
         adParams: [String : String]?
-    ) async throws -> KlipyPage<KlipyMedia> {
+    ) async throws -> KlipyPage<KlipyContentItem> {
         calls.append(.recent(kind: kind, page: page, perPage: perPage, locale: locale))
         if let recentError {
             throw recentError
@@ -85,7 +85,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
     func testLoadInitialFetchesTrendingItems() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "1", slug: "wave", type: .gif, title: "Wave")],
+                data: [.media(KlipyMedia(id: "1", slug: "wave", type: .gif, title: "Wave"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: true
@@ -104,7 +104,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
         await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
 
         XCTAssertEqual(viewModel.items.count, 1)
-        XCTAssertEqual(viewModel.items.first?.slug, "wave")
+        XCTAssertEqual(viewModel.items.first?.media?.slug, "wave")
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [.trending(kind: .gif, page: 1, perPage: 24, locale: "en-US")])
@@ -114,7 +114,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false),
             searchResult: .init(
-                data: [KlipyMedia(id: "2", slug: "thumbs-up", type: .sticker, title: "Thumbs Up")],
+                data: [.media(KlipyMedia(id: "2", slug: "thumbs-up", type: .sticker, title: "Thumbs Up"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
@@ -131,7 +131,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
         viewModel.updateQuery("thumbs up")
         await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
 
-        XCTAssertEqual(viewModel.items.first?.slug, "thumbs-up")
+        XCTAssertEqual(viewModel.items.first?.media?.slug, "thumbs-up")
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [.search(kind: .sticker, query: "thumbs up", page: 1, perPage: 24, locale: "en-US")])
@@ -141,7 +141,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false),
             searchResult: .init(
-                data: [KlipyMedia(id: "11", slug: "instant-search", type: .gif, title: "Instant Search")],
+                data: [.media(KlipyMedia(id: "11", slug: "instant-search", type: .gif, title: "Instant Search"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
@@ -159,7 +159,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
         viewModel.submitSearch()
         await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
 
-        XCTAssertEqual(viewModel.items.first?.slug, "instant-search")
+        XCTAssertEqual(viewModel.items.first?.media?.slug, "instant-search")
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [.search(kind: .gif, query: "instant", page: 1, perPage: 24, locale: "en-US")])
@@ -168,7 +168,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
     func testChangingTabsLoadsTheNewMediaType() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "3", slug: "clip-time", type: .clip, title: "Clip Time")],
+                data: [.media(KlipyMedia(id: "3", slug: "clip-time", type: .clip, title: "Clip Time"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
@@ -187,7 +187,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
         await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
 
         XCTAssertEqual(viewModel.selectedTab, .clips)
-        XCTAssertEqual(viewModel.items.first?.type, .clip)
+        XCTAssertEqual(viewModel.items.first?.media?.type, .clip)
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [.trending(kind: .clip, page: 1, perPage: 24, locale: "en-US")])
@@ -196,7 +196,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
     func testChangingTabsCanLoadEmojiMedia() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "4", slug: "party-emoji", type: .emoji, title: "Party")],
+                data: [.media(KlipyMedia(id: "4", slug: "party-emoji", type: .emoji, title: "Party"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
@@ -215,7 +215,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
         await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
 
         XCTAssertEqual(viewModel.selectedTab, .emojis)
-        XCTAssertEqual(viewModel.items.first?.type, .emoji)
+        XCTAssertEqual(viewModel.items.first?.media?.type, .emoji)
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [.trending(kind: .emoji, page: 1, perPage: 24, locale: "en-US")])
@@ -224,13 +224,13 @@ final class KlipyPickerViewModelTests: XCTestCase {
     func testChangingTabsClearsQueryAndLoadsTrendingForTheNewMediaType() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "5", slug: "clip-party", type: .clip, title: "Clip Party")],
+                data: [.media(KlipyMedia(id: "5", slug: "clip-party", type: .clip, title: "Clip Party"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
             ),
             searchResult: .init(
-                data: [KlipyMedia(id: "6", slug: "search-result", type: .gif, title: "Search Result")],
+                data: [.media(KlipyMedia(id: "6", slug: "search-result", type: .gif, title: "Search Result"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
@@ -250,7 +250,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.selectedTab, .clips)
         XCTAssertEqual(viewModel.query, "")
-        XCTAssertEqual(viewModel.items.first?.type, .clip)
+        XCTAssertEqual(viewModel.items.first?.media?.type, .clip)
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [.trending(kind: .clip, page: 1, perPage: 24, locale: "en-US")])
@@ -259,7 +259,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
     func testInitialTabFallsBackToTheFirstAvailableTab() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "7", slug: "sticker-party", type: .sticker, title: "Sticker Party")],
+                data: [.media(KlipyMedia(id: "7", slug: "sticker-party", type: .sticker, title: "Sticker Party"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
@@ -282,7 +282,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.config.mediaTabs, [.stickers, .clips])
         XCTAssertEqual(viewModel.selectedTab, .stickers)
-        XCTAssertEqual(viewModel.items.first?.type, .sticker)
+        XCTAssertEqual(viewModel.items.first?.media?.type, .sticker)
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [.trending(kind: .sticker, page: 1, perPage: 24, locale: "en-US")])
@@ -291,7 +291,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
     func testUnavailableTabsAreIgnored() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "8", slug: "wave", type: .gif, title: "Wave")],
+                data: [.media(KlipyMedia(id: "8", slug: "wave", type: .gif, title: "Wave"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
@@ -321,7 +321,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
     func testEmptyQueryCanUseRecentFeedFromConfig() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "9", slug: "recent-wave", type: .gif, title: "Recent Wave")],
+                data: [.media(KlipyMedia(id: "9", slug: "recent-wave", type: .gif, title: "Recent Wave"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
@@ -343,7 +343,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
         viewModel.loadInitial()
         await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
 
-        XCTAssertEqual(viewModel.items.first?.slug, "recent-wave")
+        XCTAssertEqual(viewModel.items.first?.media?.slug, "recent-wave")
 
         let calls = await loader.calls
         XCTAssertEqual(calls, [.recent(kind: .gif, page: 1, perPage: 24, locale: "en-US")])
@@ -352,7 +352,7 @@ final class KlipyPickerViewModelTests: XCTestCase {
     func testEmptyQueryCanReturnNoResultsWhenFeedsAreDisabled() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(
-                data: [KlipyMedia(id: "10", slug: "unused", type: .gif, title: "Unused")],
+                data: [.media(KlipyMedia(id: "10", slug: "unused", type: .gif, title: "Unused"))],
                 currentPage: 1,
                 perPage: 24,
                 hasNext: false
