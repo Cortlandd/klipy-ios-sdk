@@ -207,7 +207,7 @@ public struct KlipyTrayView: View {
                         items: store.mediaItems,
                         metadata: store.layoutMetadata,
                         maxItemsPerRow: store.config.columns,
-                        spacing: 2,
+                        spacing: 0,
                         onLoadMore: { item in
                             if item.id == store.mediaItems.last?.id {
                                 store.send(.loadNextPage)

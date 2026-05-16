@@ -215,7 +215,7 @@ public struct KlipyPickerView: View {
             items: viewModel.items,
             metadata: viewModel.layoutMetadata,
             maxItemsPerRow: viewModel.config.columns,
-            spacing: 2,
+            spacing: 0,
             onLoadMore: { item in
                 viewModel.loadMoreIfNeeded(currentItem: item)
             }
@@ -270,7 +270,6 @@ struct KlipyThumbnailView: View {
                     .padding(6)
             }
         }
-        .aspectRatio(media.displayAspectRatio, contentMode: .fit)
         .clipped()
     }
 }

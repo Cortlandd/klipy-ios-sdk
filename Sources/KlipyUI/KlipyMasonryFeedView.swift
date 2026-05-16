@@ -23,7 +23,7 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
         items: [KlipyContentItem],
         metadata: KlipyPageMeta?,
         maxItemsPerRow: Int,
-        spacing: CGFloat = 2,
+        spacing: CGFloat = 0,
         rowHeightRange: ClosedRange<CGFloat> = 92...190,
         onLoadMore: @escaping (KlipyContentItem) -> Void,
         @ViewBuilder mediaTile: @escaping (KlipyMedia) -> MediaTile,
@@ -52,9 +52,9 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
             ).makeRows(items: items)
 
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: spacing) {
+                LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(rows) { row in
-                        HStack(alignment: .top, spacing: spacing) {
+                        HStack(alignment: .top, spacing: 0) {
                             ForEach(row.items) { layout in
                                 tileView(for: layout)
                                     .frame(width: layout.width, height: layout.height)
@@ -78,9 +78,11 @@ public struct KlipyMasonryFeedView<MediaTile: View, AdvertisementTile: View, Foo
         switch layout.item {
         case .media(let media):
             mediaTile(media)
+                .padding(1)
 
         case .advertisement(let advertisement):
             advertisementTile(advertisement)
+                .padding(1)
         }
     }
 }
