@@ -26,7 +26,7 @@ The SDK also includes a tray-style accessory surface and is moving toward fuller
 - `KlipyUI`
   The SwiftUI picker layer. Re-exports `KlipyCore`.
 - `KlipyTray`
-  A tray-style picker experience for keyboard and composer surfaces.
+  A tray-style picker experience for keyboard and message input surfaces.
 
 ## Requirements
 
@@ -173,7 +173,7 @@ import SwiftUI
 import ComposableArchitecture
 import KlipyUI
 
-struct ComposerPickerSheet: View {
+struct ChatPickerSheet: View {
     let store: StoreOf<KlipyPickerFeature>
     let onSelect: (KlipyMedia) -> Void
     let onClose: () -> Void
@@ -222,7 +222,7 @@ Use `KlipyPickerFeature` directly when your app already uses TCA and you want th
 import UIKit
 import KlipyUI
 
-final class ComposerViewController: UIViewController, KlipyPickerViewControllerDelegate {
+final class ChatHostViewController: UIViewController, KlipyPickerViewControllerDelegate {
     private let client = KlipyClient.live(apiKey: "<YOUR_KLIPY_API_KEY>")
 
     func openPicker() {
@@ -311,7 +311,7 @@ Like the picker, the grid controller hosts the same TCA-backed loading, paging, 
 import SwiftUI
 import KlipyTray
 
-struct ComposerTrayHost: View {
+struct ChatTrayHost: View {
     private let client = KlipyClient.live(apiKey: "<YOUR_KLIPY_API_KEY>")
 
     var body: some View {

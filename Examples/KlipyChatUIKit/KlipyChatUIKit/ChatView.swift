@@ -5,7 +5,7 @@ import KlipyUI
 final class ChatViewController: UIViewController {
 
   private let tableView = UITableView(frame: .zero, style: .plain)
-  private let composer = ComposerView()
+  private let inputBar = MessageInputBar()
 
   private var messages: [ChatMessage] = ChatSeed.sampleConversation()
   override func viewDidLoad() {
@@ -20,21 +20,21 @@ final class ChatViewController: UIViewController {
     tableView.register(MessageCell.self, forCellReuseIdentifier: MessageCell.reuseID)
     tableView.dataSource = self
 
-    composer.translatesAutoresizingMaskIntoConstraints = false
-    composer.delegate = self
+    inputBar.translatesAutoresizingMaskIntoConstraints = false
+    inputBar.delegate = self
 
     view.addSubview(tableView)
-    view.addSubview(composer)
+    view.addSubview(inputBar)
 
     NSLayoutConstraint.activate([
       tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
       tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      tableView.bottomAnchor.constraint(equalTo: composer.topAnchor),
+      tableView.bottomAnchor.constraint(equalTo: inputBar.topAnchor),
 
-      composer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-      composer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      composer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+      inputBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      inputBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      inputBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
     ])
 
     reloadAndScrollToBottom(animated: false)
@@ -110,12 +110,12 @@ extension ChatViewController: KlipyPickerViewControllerDelegate {
   func klipyPickerViewControllerDidClose(_ controller: KlipyPickerViewController) {}
 }
 
-extension ChatViewController: ComposerViewDelegate {
-  func composerDidTapPlus() {
+extension ChatViewController: MessageInputBarDelegate {
+  func messageInputBarDidTapPlus() {
     presentTray()
   }
 
-  func composerDidSendText(_ text: String) {
+  func messageInputBarDidSendText(_ text: String) {
     messages.append(.init(id: UUID(), isMe: true, date: Date(), kind: .text(text)))
     reloadAndScrollToBottom(animated: true)
   }

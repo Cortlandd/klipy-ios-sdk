@@ -2,14 +2,14 @@ import UIKit
 import KlipyCore
 import SDWebImage
 
-protocol ComposerViewDelegate: AnyObject {
-  func composerDidTapPlus()
-  func composerDidSendText(_ text: String)
+protocol MessageInputBarDelegate: AnyObject {
+  func messageInputBarDidTapPlus()
+  func messageInputBarDidSendText(_ text: String)
 }
 
-final class ComposerView: UIView, UITextViewDelegate {
+final class MessageInputBar: UIView, UITextViewDelegate {
 
-  weak var delegate: ComposerViewDelegate?
+  weak var delegate: MessageInputBarDelegate?
 
   private let plusButton = UIButton(type: .system)
   private let sendButton = UIButton(type: .system)
@@ -60,14 +60,14 @@ final class ComposerView: UIView, UITextViewDelegate {
   required init?(coder: NSCoder) { fatalError() }
 
   @objc private func plusTapped() {
-    delegate?.composerDidTapPlus()
+    delegate?.messageInputBarDidTapPlus()
   }
 
   @objc private func sendTapped() {
     let text = textView.text.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !text.isEmpty else { return }
     textView.text = ""
-    delegate?.composerDidSendText(text)
+    delegate?.messageInputBarDidSendText(text)
   }
 
   func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {

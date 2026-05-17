@@ -9,7 +9,7 @@
 - [Configure Your API Key](#configure-your-api-key)
 - [SDK Architecture](#sdk-architecture)
 - [Common Integration Pattern](#common-integration-pattern)
-  - [Using Klipy From a Composer Activity](#using-klipy-from-a-composer-activity)
+  - [Using Klipy From a Chat Screen](#using-klipy-from-a-chat-screen)
 - [Prebuilt Picker Surfaces](#prebuilt-picker-surfaces)
   - [SwiftUI Picker](#swiftui-picker)
   - [UIKit Picker Controller](#uikit-picker-controller)
@@ -72,7 +72,7 @@ targets: [
 - `KlipyUI`
   SwiftUI and UIKit picker/grid surfaces.
 - `KlipyTray`
-  Tray-style chat/composer surface built on top of TCA.
+  Tray-style chat input surface built on top of TCA.
 
 ## Configure Your API Key
 
@@ -111,7 +111,7 @@ The SDK is split into three layers:
 - `KlipyUI`
   Picker, grid, preview, and UIKit bridge layers.
 - `KlipyTray`
-  Composer/tray integration for chat-style experiences.
+  Input-tray integration for chat-style experiences.
 
 Stateful UI surfaces are reducer-driven where it matters:
 
@@ -130,7 +130,7 @@ In most apps, the best setup looks like this:
 3. Inject that client into the surface that needs Klipy:
    - a full picker
    - an embeddable grid
-   - a tray/composer surface
+   - an input tray surface
    - a single media preview or message bubble
 4. Let the SDK own the Klipy-specific loading, pagination, mixed media/ad rendering, and offline handling.
 
@@ -142,18 +142,18 @@ This keeps your app code focused on:
 - analytics
 - any higher-level feature state your product owns
 
-### Using Klipy From a Composer Activity
+### Using Klipy From a Chat Screen
 
-Below is a more complete example of using Klipy inside a real chat-composer style screen. The app owns the message list and send flow, while the SDK owns the media-search experience.
+Below is a more complete example of using Klipy inside a real chat screen. The app owns the message list and send flow, while the SDK owns the media-search experience.
 
 ```swift
 import UIKit
 import KlipyCore
 import KlipyUI
 
-final class ComposerActivityViewController: UIViewController, KlipyPickerViewControllerDelegate {
+final class ChatViewController: UIViewController, KlipyPickerViewControllerDelegate {
     private let tableView = UITableView(frame: .zero, style: .plain)
-    private let inputBar = ComposerInputBar()
+    private let inputBar = MessageInputBar()
 
     private var messages: [ChatMessage] = []
     private let client: KlipyClient
@@ -234,7 +234,7 @@ The important integration boundary here is:
 
 That same pattern also works well in:
 
-- comment composers
+- comment input flows
 - DM or group chat screens
 - story/reaction pickers
 - sticker or meme attachments in editors
@@ -247,7 +247,7 @@ That same pattern also works well in:
 import SwiftUI
 import KlipyUI
 
-struct ComposerView: View {
+struct ChatScreen: View {
     @State private var isShowingPicker = false
     @State private var selectedMedia: KlipyMedia?
 
@@ -288,7 +288,7 @@ This is the fastest way to adopt the SDK if you want a self-contained picker tha
 import UIKit
 import KlipyUI
 
-final class ComposerViewController: UIViewController, KlipyPickerViewControllerDelegate {
+final class ChatHostViewController: UIViewController, KlipyPickerViewControllerDelegate {
     private let client = KlipyClient.live(apiKey: "<YOUR_KLIPY_API_KEY>")
 
     func presentPicker() {
@@ -451,7 +451,7 @@ KlipyMediaPreviewView(media: media)
 
 ## Tray Integration
 
-`KlipyTrayView` is intended for chat and composer flows where the Klipy surface behaves like an accessory tray rather than a full modal picker.
+`KlipyTrayView` is intended for chat and message-input flows where the Klipy surface behaves like an accessory tray rather than a full modal picker.
 
 `KlipyTrayConfig` supports:
 
@@ -463,7 +463,7 @@ KlipyMediaPreviewView(media: media)
 - categories and search visibility
 
 The tray is TCA-driven and shares the same mixed-content feed expectations as the picker and grid.
-Use the tray when Klipy should feel attached to a composer rather than presented as a full-screen or sheet-based picker.
+Use the tray when Klipy should feel attached to a message input area rather than presented as a full-screen or sheet-based picker.
 
 ## Advertisements
 

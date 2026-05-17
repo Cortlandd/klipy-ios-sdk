@@ -33,7 +33,7 @@ public struct ChatView: View {
                     .padding(.top, 12)
             }
 
-            composer
+            messageInputBar
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
                 .background(Color(.systemBackground))
@@ -82,7 +82,7 @@ public struct ChatView: View {
         }
     }
 
-    private var composer: some View {
+    private var messageInputBar: some View {
         HStack(spacing: 10) {
             Button {
                 store.send(.plusTapped)
