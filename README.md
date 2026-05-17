@@ -172,6 +172,52 @@ Use `locale` when you want the picker to fetch content with an explicit locale i
 - `.lightBlur`
 - `.darkBlur`
 
+### UIKit picker controller
+
+```swift
+import UIKit
+import KlipyUI
+
+final class ComposerViewController: UIViewController, KlipyPickerViewControllerDelegate {
+    private let client = KlipyClient.live(apiKey: "<YOUR_KLIPY_API_KEY>")
+
+    func openPicker() {
+        let controller = KlipyPickerViewController(
+            client: client,
+            config: .init(
+                mediaTabs: [.gifs, .stickers, .clips],
+                maxItemsPerRow: 3,
+                showConfirmationScreen: true,
+                theme: .darkBlur
+            )
+        )
+        controller.delegate = self
+        present(controller, animated: true)
+    }
+
+    func klipyPickerViewController(_ controller: KlipyPickerViewController, didSelect media: KlipyMedia) {
+        print("Selected media: \\(media.slug)")
+    }
+
+    func klipyPickerViewControllerDidClose(_ controller: KlipyPickerViewController) {}
+}
+```
+
+Use `dismissesAfterSelection` or `dismissesAfterClose` when your app wants to manage presentation explicitly instead of letting the controller dismiss itself.
+
+### UIKit media view
+
+```swift
+import UIKit
+import KlipyUI
+
+let mediaView = KlipyMediaView()
+mediaView.cornerRadius = 12
+mediaView.configure(with: media)
+```
+
+`KlipyMediaView` gives UIKit screens a reusable display primitive for showing a selected GIF, sticker, meme, emoji, or clip without embedding SwiftUI themselves.
+
 ### Tray integration
 
 ```swift

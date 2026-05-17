@@ -1,7 +1,5 @@
 import UIKit
-import SwiftUI
 import KlipyCore
-import KlipyTray
 import KlipyUI
 
 final class ChatViewController: UIViewController {
@@ -10,7 +8,6 @@ final class ChatViewController: UIViewController {
   private let composer = ComposerView()
 
   private var messages: [ChatMessage] = ChatSeed.sampleConversation()
-
   override func viewDidLoad() {
     super.viewDidLoad()
     title = "Klipy Chat (UIKit)"
@@ -66,37 +63,29 @@ final class ChatViewController: UIViewController {
 
     let client = KlipyClient(configuration: .init(apiKey: apiKey))
 
-    let tray = KlipyTrayView(
+    let picker = KlipyPickerViewController(
       client: client,
       config: .init(
         mediaTabs: [.gifs, .stickers, .clips, .memes, .emojis],
-        initialTab: .gifs,
         maxItemsPerRow: 3,
-        showTrending: true,
         showRecents: false,
-        showCategories: true,
-        showSearch: true
-      ),
-      onSelect: { [weak self] media in
-        guard let self else { return }
-        self.dismiss(animated: true)
-        self.messages.append(.init(id: UUID(), isMe: true, date: Date(), kind: .media(media)))
-        self.reloadAndScrollToBottom(animated: true)
-      },
-      onError: { _ in }
+        showTrending: true,
+        initialTab: .gifs,
+        showConfirmationScreen: true,
+        theme: .darkBlur
+      )
     )
+    picker.delegate = self
+    picker.modalPresentationStyle = .pageSheet
 
-    let host = UIHostingController(rootView: tray)
-    host.modalPresentationStyle = .pageSheet
-
-    if let sheet = host.sheetPresentationController {
+    if let sheet = picker.sheetPresentationController {
       sheet.detents = [.medium(), .large()]
       sheet.prefersGrabberVisible = true
       sheet.preferredCornerRadius = 0
       sheet.prefersScrollingExpandsWhenScrolledToEdge = true
     }
 
-    present(host, animated: true)
+    present(picker, animated: true)
   }
 }
 
@@ -110,6 +99,15 @@ extension ChatViewController: UITableViewDataSource {
     cell.configure(message: messages[indexPath.row])
     return cell
   }
+}
+
+extension ChatViewController: KlipyPickerViewControllerDelegate {
+  func klipyPickerViewController(_ controller: KlipyPickerViewController, didSelect media: KlipyMedia) {
+    messages.append(.init(id: UUID(), isMe: true, date: Date(), kind: .media(media)))
+    reloadAndScrollToBottom(animated: true)
+  }
+
+  func klipyPickerViewControllerDidClose(_ controller: KlipyPickerViewController) {}
 }
 
 extension ChatViewController: ComposerViewDelegate {
