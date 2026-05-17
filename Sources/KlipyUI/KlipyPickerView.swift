@@ -11,10 +11,12 @@ import SDWebImageSwiftUI
 
 public struct KlipyPickerView: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.colorScheme) private var colorScheme
 
     @StateObject private var viewModel: KlipyPickerViewModel
     private let onSelect: (KlipyMedia) -> Void
     private let onClose: (() -> Void)?
+    @State private var confirmationMedia: KlipyMedia?
     
     // Global mute state for clips in this picker
     @State private var isClipsMuted: Bool = true
@@ -70,9 +72,27 @@ public struct KlipyPickerView: View {
         }
         .padding(.top, 4)
         .padding(.bottom, 4)
+        .background(containerBackground)
         .onAppear {
             viewModel.loadInitial()
         }
+        .sheet(item: $confirmationMedia) { media in
+            KlipyMediaConfirmationView(
+                media: media,
+                theme: viewModel.config.theme,
+                onSelect: {
+                    confirmationMedia = nil
+                    onSelect(media)
+                },
+                onClose: {
+                    confirmationMedia = nil
+                }
+            )
+        }
+    }
+
+    private var palette: KlipyThemePalette {
+        viewModel.config.theme.palette(for: colorScheme)
     }
 
     // MARK: - Top handle
@@ -81,7 +101,7 @@ public struct KlipyPickerView: View {
         HStack {
             Spacer()
             Capsule()
-                .fill(Color.secondary.opacity(0.35))
+                .fill(palette.secondaryText.opacity(0.35))
                 .frame(width: 40, height: 4)
                 .padding(.vertical, 6)
             Spacer()
@@ -99,7 +119,7 @@ public struct KlipyPickerView: View {
         VStack(spacing: 0) {
             Rectangle()
                 .frame(height: 0.5)
-                .foregroundColor(Color.gray)
+                .foregroundColor(palette.separator)
             Button {
                 if let url = URL(string: "https://klipy.com/en-US") {
                     openURL(url)
@@ -114,11 +134,12 @@ public struct KlipyPickerView: View {
 
                     Text("Powered by Klipy")
                         .font(.footnote.weight(.semibold))
+                        .foregroundStyle(palette.primaryText)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 4)
             }
-            .background(Color.white)
+            .background(poweredByBackground)
             .buttonStyle(.plain)
             .padding(.horizontal, 8)
             .padding(.top, 4)
@@ -151,6 +172,7 @@ public struct KlipyPickerView: View {
             .textInputAutocapitalization(.never)
             .disableAutocorrection(true)
             .submitLabel(.search)
+            .foregroundStyle(palette.primaryText)
             .onSubmit {
                 viewModel.submitSearch()
             }
@@ -158,7 +180,7 @@ public struct KlipyPickerView: View {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(Color(.systemGray6))
+                    .fill(palette.secondarySurface)
             )
             .overlay(
                 HStack {
@@ -168,7 +190,7 @@ public struct KlipyPickerView: View {
                             viewModel.updateQuery("")
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(palette.secondaryText)
                                 .padding(.trailing, 10)
                         }
                         .buttonStyle(.plain)
@@ -194,9 +216,10 @@ public struct KlipyPickerView: View {
                     VStack(spacing: 8) {
                         Text("Failed to load Klipy content.")
                             .font(.callout)
+                            .foregroundStyle(palette.primaryText)
                         Text(error.description)
                             .font(.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(palette.secondaryText)
                             .multilineTextAlignment(.center)
                         Button("Retry") {
                             viewModel.loadInitial()
@@ -221,7 +244,11 @@ public struct KlipyPickerView: View {
             }
         ) { media in
             Button {
-                onSelect(media)
+                if viewModel.config.showConfirmationScreen {
+                    confirmationMedia = media
+                } else {
+                    onSelect(media)
+                }
             } label: {
                 KlipyThumbnailView(media: media, isClipsMuted: $isClipsMuted)
             }
@@ -236,6 +263,27 @@ public struct KlipyPickerView: View {
             }
         }
         .padding(.top, 2)
+    }
+
+    @ViewBuilder
+    private var containerBackground: some View {
+        if palette.chromeMaterial != nil {
+            Rectangle()
+                .fill(palette.chromeMaterial ?? .regularMaterial)
+                .ignoresSafeArea()
+        } else {
+            palette.background
+                .ignoresSafeArea()
+        }
+    }
+
+    @ViewBuilder
+    private var poweredByBackground: some View {
+        if palette.chromeMaterial != nil {
+            Rectangle().fill(palette.chromeMaterial ?? .regularMaterial)
+        } else {
+            palette.surface
+        }
     }
 }
 

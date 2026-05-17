@@ -44,12 +44,15 @@ public final class KlipyPickerViewModel: ObservableObject {
         self.config = KlipyPickerConfig(
             mediaTabs: resolvedTabs,
             maxItemsPerRow: config.maxItemsPerRow,
+            locale: config.locale,
             showRecents: config.showRecents,
             showTrending: config.showTrending,
-            initialTab: resolvedTabs.contains(config.initialTab) ? config.initialTab : resolvedTabs[0]
+            initialTab: resolvedTabs.contains(config.initialTab) ? config.initialTab : resolvedTabs[0],
+            showConfirmationScreen: config.showConfirmationScreen,
+            theme: config.theme
         )
         self.selectedTab = self.config.initialTab
-        self.locale = locale
+        self.locale = config.locale ?? locale
         self.perPage = perPage
         self.searchDebounceNanoseconds = searchDebounceNanoseconds
     }

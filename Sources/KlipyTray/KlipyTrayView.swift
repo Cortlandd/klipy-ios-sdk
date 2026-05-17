@@ -20,6 +20,7 @@ import ComposableArchitecture
 public struct KlipyTrayView: View {
     
     @Environment(\.openURL) private var openURL
+    @Environment(\.colorScheme) private var colorScheme
 
     @ComposableArchitecture.Bindable public var store: StoreOf<KlipyTrayFeature>
 
@@ -77,7 +78,7 @@ public struct KlipyTrayView: View {
                 
                 poweredByBar
             }
-            .background(Color(.systemBackground))
+            .background(containerBackground)
             .onAppear {
                 store.send(.onAppear)
             }
@@ -89,12 +90,17 @@ public struct KlipyTrayView: View {
         }
     }
 
+    private var palette: KlipyThemePalette {
+        store.config.theme.palette(for: colorScheme)
+    }
+
     // MARK: - Search
 
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(Color.secondary)
+                .foregroundStyle(palette.secondaryText)
 
             TextField(
                 "Search",
@@ -115,7 +121,7 @@ public struct KlipyTrayView: View {
                   store.send(.clearSearchTapped)
                 } label: {
                   Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(palette.secondaryText)
                 }
                 .buttonStyle(.plain)
             }
@@ -124,7 +130,7 @@ public struct KlipyTrayView: View {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+                .fill(palette.secondarySurface)
         )
     }
 
@@ -140,11 +146,12 @@ public struct KlipyTrayView: View {
                     } label: {
                         Text(tab.title)
                             .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(palette.primaryText)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(selected ? Color.accentColor.opacity(0.18) : Color(.secondarySystemBackground))
+                                    .fill(selected ? Color.accentColor.opacity(0.18) : palette.secondarySurface)
                             )
                     }
                     .buttonStyle(.plain)
@@ -163,11 +170,12 @@ public struct KlipyTrayView: View {
                 } label: {
                     Text("All")
                         .font(.system(size: 13, weight: store.chosenCategory == nil ? .semibold : .regular))
+                        .foregroundStyle(palette.primaryText)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(store.chosenCategory == nil ? Color.accentColor.opacity(0.18) : Color(.secondarySystemBackground))
+                                .fill(store.chosenCategory == nil ? Color.accentColor.opacity(0.18) : palette.secondarySurface)
                         )
                 }
                 .buttonStyle(.plain)
@@ -180,11 +188,12 @@ public struct KlipyTrayView: View {
                         Text(cat.category)
                             .lineLimit(1)
                             .font(.system(size: 13, weight: selected ? .semibold : .regular))
+                            .foregroundStyle(palette.primaryText)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
                             .background(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(selected ? Color.accentColor.opacity(0.18) : Color(.secondarySystemBackground))
+                                    .fill(selected ? Color.accentColor.opacity(0.18) : palette.secondarySurface)
                             )
                     }
                     .buttonStyle(.plain)
@@ -257,16 +266,38 @@ public struct KlipyTrayView: View {
                     Text("Powered by Klipy")
                         .font(.footnote.weight(.semibold))
                         .multilineTextAlignment(.center)
+                        .foregroundStyle(palette.primaryText)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 4)
             }
-            .background(Color.white)
+            .background(poweredByBackground)
             .buttonStyle(.plain)
             .padding(.horizontal, 8)
             .accessibilityLabel("Open Klipy website")
         }
         .frame(height: 5)
+    }
+
+    @ViewBuilder
+    private var containerBackground: some View {
+        if palette.chromeMaterial != nil {
+            Rectangle()
+                .fill(palette.chromeMaterial ?? .regularMaterial)
+                .ignoresSafeArea()
+        } else {
+            palette.background
+                .ignoresSafeArea()
+        }
+    }
+
+    @ViewBuilder
+    private var poweredByBackground: some View {
+        if palette.chromeMaterial != nil {
+            Rectangle().fill(palette.chromeMaterial ?? .regularMaterial)
+        } else {
+            palette.surface
+        }
     }
 }
 

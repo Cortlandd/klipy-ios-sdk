@@ -138,7 +138,7 @@ public struct KlipyTrayFeature: Sendable {
                 state.errorMessage = nil
 
                 let kind = tab.mediaType
-                let locale = client.configuration.defaultLocale
+                let locale = state.config.locale ?? client.configuration.defaultLocale
 
                 let categoriesEffect: Effect<Action> =
                     state.config.showCategories
@@ -358,7 +358,7 @@ public struct KlipyTrayFeature: Sendable {
             do {
                 let kind = tab.mediaType
                 let perPage = client.configuration.defaultPerPage
-                let locale = client.configuration.defaultLocale
+                let locale = config.locale ?? client.configuration.defaultLocale
                 let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
                 let categoryFilter = chosenCategory?.category.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
                 let filter = !categoryFilter.isEmpty ? categoryFilter : trimmedQuery

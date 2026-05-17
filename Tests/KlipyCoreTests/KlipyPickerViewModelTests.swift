@@ -351,6 +351,31 @@ final class KlipyPickerViewModelTests: XCTestCase {
         XCTAssertEqual(calls, [])
     }
 
+    func testConfigLocaleOverridesInjectedLocale() async {
+        let loader = MockKlipyMediaLoader(
+            trendingResult: .init(
+                data: [.media(KlipyMedia(id: "14", slug: "bonjour", type: .gif, title: "Bonjour"))],
+                currentPage: 1,
+                perPage: 24,
+                hasNext: false
+            ),
+            searchResult: .init(data: [], currentPage: 1, perPage: 24, hasNext: false)
+        )
+
+        let viewModel = KlipyPickerViewModel(
+            client: loader,
+            config: KlipyPickerConfig(locale: "fr-FR", initialTab: .gifs),
+            locale: "en-US",
+            searchDebounceNanoseconds: 10_000_000
+        )
+
+        viewModel.loadInitial()
+        await waitUntil { !viewModel.isLoading && !viewModel.items.isEmpty }
+
+        let calls = await loader.calls
+        XCTAssertEqual(calls, [.trending(kind: .gif, page: 1, perPage: 24, locale: "fr-FR")])
+    }
+
     func testEmptyQueryCanUseRecentFeedFromConfig() async {
         let loader = MockKlipyMediaLoader(
             trendingResult: .init(

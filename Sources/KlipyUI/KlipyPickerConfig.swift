@@ -21,6 +21,9 @@ public struct KlipyPickerConfig: Equatable, Sendable {
     /// so this value controls feed density instead of a fixed column count.
     public var maxItemsPerRow: Int
 
+    /// Optional locale override used for search, trending, and recents.
+    public var locale: String?
+
     /// Whether to use recents when the search query is empty.
     public var showRecents: Bool
 
@@ -32,18 +35,30 @@ public struct KlipyPickerConfig: Equatable, Sendable {
     /// The initial tab to select when the picker opens.
     public var initialTab: KlipyPickerMediaTab
 
+    /// Whether selecting a media item should first show a confirmation screen.
+    public var showConfirmationScreen: Bool
+
+    /// Visual styling for the picker.
+    public var theme: KlipyTheme
+
     public init(
         mediaTabs: [KlipyPickerMediaTab] = [.gifs, .stickers, .clips, .memes, .emojis],
         maxItemsPerRow: Int = 3,
+        locale: String? = nil,
         showRecents: Bool = false,
         showTrending: Bool = true,
-        initialTab: KlipyPickerMediaTab = .gifs
+        initialTab: KlipyPickerMediaTab = .gifs,
+        showConfirmationScreen: Bool = false,
+        theme: KlipyTheme = .automatic
     ) {
         self.mediaTabs = mediaTabs
         self.maxItemsPerRow = max(2, maxItemsPerRow)
+        self.locale = locale
         self.showRecents = showRecents
         self.showTrending = showTrending
         self.initialTab = initialTab
+        self.showConfirmationScreen = showConfirmationScreen
+        self.theme = theme
     }
 
     @available(*, deprecated, renamed: "maxItemsPerRow", message: "The picker uses a masonry feed now, so this value controls feed density instead of a strict grid column count.")
@@ -56,16 +71,22 @@ public struct KlipyPickerConfig: Equatable, Sendable {
     public init(
         mediaTabs: [KlipyPickerMediaTab],
         columns: Int,
+        locale: String? = nil,
         showRecents: Bool,
         showTrending: Bool,
-        initialTab: KlipyPickerMediaTab
+        initialTab: KlipyPickerMediaTab,
+        showConfirmationScreen: Bool = false,
+        theme: KlipyTheme = .automatic
     ) {
         self.init(
             mediaTabs: mediaTabs,
             maxItemsPerRow: columns,
+            locale: locale,
             showRecents: showRecents,
             showTrending: showTrending,
-            initialTab: initialTab
+            initialTab: initialTab,
+            showConfirmationScreen: showConfirmationScreen,
+            theme: theme
         )
     }
 

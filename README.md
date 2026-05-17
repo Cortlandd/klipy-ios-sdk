@@ -10,10 +10,12 @@ This repository is not affiliated with, endorsed by, or owned by Klipy.
 
 The production-ready surfaces in this repo today are:
 - `KlipyCore`, which provides the typed async client, models, pagination, categories, item lookup, recent/share/report flows, and stable `customer_id` handling.
-- `KlipyUI`, which provides a callback-based SwiftUI picker with tabs, search, previews, and infinite scrolling.
+- `KlipyUI`, which provides a callback-based SwiftUI picker with tabs, search, previews, infinite scrolling, configurable themes, locale overrides, and optional confirmation before selection.
 
 `KlipyTray` is also included as an optional tray-style surface for chat and composer flows, built on top of The Composable Architecture for teams already using that stack.
 The main remaining release check is to run the live integration flows with your own Klipy API key and confirm the exact endpoint and content behavior you want in your environment.
+
+The SDK also includes a tray-style accessory surface and is moving toward fuller controller-style integration points for teams that want parity with larger media SDKs.
 
 ## Products
 
@@ -146,6 +148,30 @@ struct ChatView: View {
 `KlipyPickerConfig` controls which tabs are shown, how dense the feed is, and which empty-query feed the picker uses. `maxItemsPerRow` tunes the masonry feed without forcing a strict column grid. If `initialTab` is not included in `mediaTabs`, the picker falls back to the first available tab. If both `showTrending` and `showRecents` are `false`, the picker waits for a search before loading results.
 If the device is offline and the picker has no loaded content yet, it automatically shows a retryable offline state instead of the generic error view.
 
+### Picker configuration
+
+```swift
+let config = KlipyPickerConfig(
+    mediaTabs: [.gifs, .stickers, .clips],
+    maxItemsPerRow: 3,
+    locale: "en-US",
+    showRecents: false,
+    showTrending: true,
+    initialTab: .gifs,
+    showConfirmationScreen: true,
+    theme: .darkBlur
+)
+```
+
+Use `locale` when you want the picker to fetch content with an explicit locale instead of relying on the app's current device locale. Set `showConfirmationScreen` when you want the picker to present a lightweight review screen before selection is handed back to your app.
+
+`KlipyTheme` supports:
+- `.automatic`
+- `.light`
+- `.dark`
+- `.lightBlur`
+- `.darkBlur`
+
 ### Tray integration
 
 ```swift
@@ -156,14 +182,27 @@ struct ComposerTrayHost: View {
     private let client = KlipyClient.live(apiKey: "<YOUR_KLIPY_API_KEY>")
 
     var body: some View {
-        KlipyTrayView(client: client) { media in
+        KlipyTrayView(
+            client: client,
+            config: .init(
+                mediaTabs: [.gifs, .clips, .stickers],
+                initialTab: .gifs,
+                maxItemsPerRow: 3,
+                locale: "en-US",
+                showTrending: true,
+                showRecents: false,
+                showCategories: true,
+                showSearch: true,
+                theme: .dark
+            )
+        ) { media in
             print("Selected media: \(media.slug)")
         }
     }
 }
 ```
 
-`KlipyTrayView` uses the same retryable offline state when the tray cannot reach Klipy and does not have any loaded media yet.
+`KlipyTrayView` uses the same retryable offline state when the tray cannot reach Klipy and does not have any loaded media yet. `KlipyTrayConfig` supports the same locale and theme controls as the standalone picker so the two surfaces can stay consistent inside the same app.
 
 ## Screenshots
 

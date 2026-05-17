@@ -22,6 +22,9 @@ public struct KlipyTrayConfig: Equatable, Sendable {
     /// so this controls feed density instead of a strict grid column count.
     public var maxItemsPerRow: Int
 
+    /// Optional locale override used for search, trending, recents, and categories.
+    public var locale: String?
+
     /// When search query is empty, load trending first if enabled.
     public var showTrending: Bool
 
@@ -37,24 +40,31 @@ public struct KlipyTrayConfig: Equatable, Sendable {
     /// Official Klipy website
     public var brandURL: URL? = URL(string: "https://klipy.com")
 
+    /// Visual styling for the tray.
+    public var theme: KlipyTheme
+
     public init(
         mediaTabs: [KlipyPickerMediaTab] = [.gifs, .stickers, .clips, .memes, .emojis],
         initialTab: KlipyPickerMediaTab = .gifs,
         maxItemsPerRow: Int = 3,
+        locale: String? = nil,
         showTrending: Bool = true,
         showRecents: Bool = false,
         showCategories: Bool = false,
         showSearch: Bool = true,
-        brandURL: URL? = URL(string: "https://klipy.com")
+        brandURL: URL? = URL(string: "https://klipy.com"),
+        theme: KlipyTheme = .automatic
     ) {
         self.mediaTabs = mediaTabs
         self.initialTab = initialTab
         self.maxItemsPerRow = max(2, maxItemsPerRow)
+        self.locale = locale
         self.showTrending = showTrending
         self.showRecents = showRecents
         self.showCategories = showCategories
         self.showSearch = showSearch
         self.brandURL = brandURL
+        self.theme = theme
     }
 
     @available(*, deprecated, renamed: "maxItemsPerRow", message: "The tray uses a masonry feed now, so this value controls feed density instead of a strict grid column count.")
@@ -68,21 +78,25 @@ public struct KlipyTrayConfig: Equatable, Sendable {
         mediaTabs: [KlipyPickerMediaTab],
         initialTab: KlipyPickerMediaTab,
         columns: Int,
+        locale: String? = nil,
         showTrending: Bool,
         showRecents: Bool,
         showCategories: Bool,
         showSearch: Bool,
-        brandURL: URL?
+        brandURL: URL?,
+        theme: KlipyTheme = .automatic
     ) {
         self.init(
             mediaTabs: mediaTabs,
             initialTab: initialTab,
             maxItemsPerRow: columns,
+            locale: locale,
             showTrending: showTrending,
             showRecents: showRecents,
             showCategories: showCategories,
             showSearch: showSearch,
-            brandURL: brandURL
+            brandURL: brandURL,
+            theme: theme
         )
     }
 
