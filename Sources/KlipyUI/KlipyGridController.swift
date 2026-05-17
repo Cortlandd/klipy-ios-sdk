@@ -2,7 +2,7 @@
 //  KlipyGridController.swift
 //  KlipySDK
 //
-//  Created by Codex on 5/16/26.
+//  Created by Cortland Walker on 5/16/26.
 //
 
 import UIKit

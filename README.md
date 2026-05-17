@@ -166,6 +166,49 @@ let config = KlipyPickerConfig(
 Use `locale` when you want the picker to fetch content with an explicit locale instead of relying on the app's current device locale. Set `showConfirmationScreen` when you want the picker to present a lightweight review screen before selection is handed back to your app.
 The picker state, search debouncing, pagination, offline handling, and mixed media/ad feed behavior are all driven by an internal TCA feature so SwiftUI and UIKit entry points stay in sync.
 
+### TCA-backed picker integration
+
+```swift
+import SwiftUI
+import ComposableArchitecture
+import KlipyUI
+
+struct ComposerPickerSheet: View {
+    let store: StoreOf<KlipyPickerFeature>
+    let onSelect: (KlipyMedia) -> Void
+    let onClose: () -> Void
+
+    init(client: KlipyClient, onSelect: @escaping (KlipyMedia) -> Void, onClose: @escaping () -> Void) {
+        self.store = Store(
+            initialState: KlipyPickerFeature.State(
+                config: .init(
+                    mediaTabs: [.gifs, .stickers, .clips, .emojis],
+                    maxItemsPerRow: 3,
+                    showTrending: true,
+                    showRecents: false,
+                    showConfirmationScreen: true,
+                    theme: .darkBlur
+                )
+            )
+        ) {
+            KlipyPickerFeature(client: client)
+        }
+        self.onSelect = onSelect
+        self.onClose = onClose
+    }
+
+    var body: some View {
+        KlipyPickerView(
+            store: store,
+            onSelect: onSelect,
+            onClose: onClose
+        )
+    }
+}
+```
+
+Use `KlipyPickerFeature` directly when your app already uses TCA and you want the picker's search, paging, offline, and ad-aware feed state to live in a reducer-driven flow from the start.
+
 `KlipyTheme` supports:
 - `.automatic`
 - `.light`
