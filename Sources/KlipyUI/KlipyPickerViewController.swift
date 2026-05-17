@@ -8,6 +8,7 @@
 import UIKit
 import SwiftUI
 import KlipyCore
+import ComposableArchitecture
 
 @MainActor
 public protocol KlipyPickerViewControllerDelegate: AnyObject {
@@ -25,6 +26,7 @@ public final class KlipyPickerViewController: UIViewController {
     /// When `true`, the controller dismisses itself after the close affordance is used.
     public var dismissesAfterClose: Bool
 
+    public let store: StoreOf<KlipyPickerFeature>
     private let hostingController: UIHostingController<KlipyPickerView>
 
     public init(
@@ -35,21 +37,22 @@ public final class KlipyPickerViewController: UIViewController {
     ) {
         self.dismissesAfterSelection = dismissesAfterSelection
         self.dismissesAfterClose = dismissesAfterClose
+        self.store = Store(initialState: KlipyPickerFeature.State(config: config)) {
+            KlipyPickerFeature(
+                client: client,
+                locale: client.configuration.defaultLocale ?? Locale.autoupdatingCurrent.identifier,
+                perPage: client.configuration.defaultPerPage ?? 24
+            )
+        }
 
         self.hostingController = UIHostingController(
-            rootView: KlipyPickerView(
-                client: client,
-                config: config,
-                onSelect: { _ in },
-                onClose: nil
-            )
+            rootView: KlipyPickerView(store: store, onSelect: { _ in }, onClose: nil)
         )
 
         super.init(nibName: nil, bundle: nil)
 
         hostingController.rootView = KlipyPickerView(
-            client: client,
-            config: config,
+            store: store,
             onSelect: { [weak self] media in
                 self?.handleSelection(media)
             },

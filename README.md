@@ -10,9 +10,9 @@ This repository is not affiliated with, endorsed by, or owned by Klipy.
 
 The production-ready surfaces in this repo today are:
 - `KlipyCore`, which provides the typed async client, models, pagination, categories, item lookup, recent/share/report flows, and stable `customer_id` handling.
-- `KlipyUI`, which provides a callback-based SwiftUI picker with tabs, search, previews, infinite scrolling, configurable themes, locale overrides, and optional confirmation before selection.
+- `KlipyUI`, which provides callback-based SwiftUI and UIKit picker/grid surfaces with tabs, search, previews, infinite scrolling, configurable themes, locale overrides, and optional confirmation before selection.
 
-`KlipyTray` is also included as an optional tray-style surface for chat and composer flows, built on top of The Composable Architecture for teams already using that stack.
+`KlipyUI` and `KlipyTray` are built around The Composable Architecture for teams that want a consistent state-management model across picker, grid, and tray flows.
 The main remaining release check is to run the live integration flows with your own Klipy API key and confirm the exact endpoint and content behavior you want in your environment.
 
 The SDK also includes a tray-style accessory surface and is moving toward fuller controller-style integration points for teams that want parity with larger media SDKs.
@@ -164,6 +164,7 @@ let config = KlipyPickerConfig(
 ```
 
 Use `locale` when you want the picker to fetch content with an explicit locale instead of relying on the app's current device locale. Set `showConfirmationScreen` when you want the picker to present a lightweight review screen before selection is handed back to your app.
+The picker state, search debouncing, pagination, offline handling, and mixed media/ad feed behavior are all driven by an internal TCA feature so SwiftUI and UIKit entry points stay in sync.
 
 `KlipyTheme` supports:
 - `.automatic`
@@ -259,6 +260,7 @@ final class SearchResultsViewController: UIViewController, KlipyGridControllerDe
 ```
 
 Use `KlipyGridController` when your app already owns its own search field, tabs, or navigation shell and only needs Klipy’s feed rendering, pagination, and ad-aware mixed-content parsing.
+Like the picker, the grid controller hosts the same TCA-backed loading, paging, offline, and ad-aware feed logic under the hood.
 
 ### Tray integration
 

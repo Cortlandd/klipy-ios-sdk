@@ -8,6 +8,7 @@
 import UIKit
 import SwiftUI
 import KlipyCore
+import ComposableArchitecture
 
 @MainActor
 public protocol KlipyGridControllerDelegate: AnyObject {
@@ -18,7 +19,7 @@ public protocol KlipyGridControllerDelegate: AnyObject {
 public final class KlipyGridController: UIViewController {
     public weak var delegate: (any KlipyGridControllerDelegate)?
 
-    public let viewModel: KlipyGridViewModel
+    public let store: StoreOf<KlipyGridFeature>
     private let hostingController: UIHostingController<KlipyGridView>
 
     public init(
@@ -26,20 +27,22 @@ public final class KlipyGridController: UIViewController {
         content: KlipyGridContent,
         configuration: KlipyGridConfiguration = .init()
     ) {
-        self.viewModel = KlipyGridViewModel(
-            client: client,
-            content: content,
-            configuration: configuration,
-            fallbackLocale: client.configuration.defaultLocale ?? Locale.autoupdatingCurrent.identifier,
-            perPage: client.configuration.defaultPerPage ?? 24
-        )
+        self.store = Store(
+            initialState: KlipyGridFeature.State(content: content, configuration: configuration)
+        ) {
+            KlipyGridFeature(
+                client: client,
+                fallbackLocale: client.configuration.defaultLocale ?? Locale.autoupdatingCurrent.identifier,
+                perPage: client.configuration.defaultPerPage ?? 24
+            )
+        }
         self.hostingController = UIHostingController(
-            rootView: KlipyGridView(viewModel: viewModel) { _ in }
+            rootView: KlipyGridView(store: store) { _ in }
         )
 
         super.init(nibName: nil, bundle: nil)
 
-        hostingController.rootView = KlipyGridView(viewModel: viewModel) { [weak self] media in
+        hostingController.rootView = KlipyGridView(store: store) { [weak self] media in
             guard let self else { return }
             self.delegate?.klipyGridController(self, didSelect: media)
         }
@@ -57,7 +60,7 @@ public final class KlipyGridController: UIViewController {
     }
 
     public func setContent(_ content: KlipyGridContent) {
-        viewModel.setContent(content)
+        store.send(.setContent(content))
     }
 
     private func embedHostingController() {

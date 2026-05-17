@@ -8,12 +8,13 @@
 import SwiftUI
 import KlipyCore
 import SDWebImageSwiftUI
+import ComposableArchitecture
 
 public struct KlipyPickerView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.colorScheme) private var colorScheme
 
-    @StateObject private var viewModel: KlipyPickerViewModel
+    public let store: StoreOf<KlipyPickerFeature>
     private let onSelect: (KlipyMedia) -> Void
     private let onClose: (() -> Void)?
     @State private var confirmationMedia: KlipyMedia?
@@ -27,12 +28,24 @@ public struct KlipyPickerView: View {
         onSelect: @escaping (KlipyMedia) -> Void,
         onClose: (() -> Void)? = nil
     ) {
-        _viewModel = StateObject(
-            wrappedValue: KlipyPickerViewModel(
+        self.store = Store(initialState: KlipyPickerFeature.State(config: config)) {
+            KlipyPickerFeature(
                 client: client,
-                config: config
+                locale: client.configuration.defaultLocale ?? Locale.autoupdatingCurrent.identifier,
+                perPage: client.configuration.defaultPerPage ?? 24
             )
-        )
+        }
+        KlipyUIBootstrap.configureIfNeeded()
+        self.onSelect = onSelect
+        self.onClose = onClose
+    }
+
+    public init(
+        store: StoreOf<KlipyPickerFeature>,
+        onSelect: @escaping (KlipyMedia) -> Void,
+        onClose: (() -> Void)? = nil
+    ) {
+        self.store = store
         KlipyUIBootstrap.configureIfNeeded()
         self.onSelect = onSelect
         self.onClose = onClose
@@ -57,42 +70,43 @@ public struct KlipyPickerView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            topHandleBar
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                topHandleBar
 
-            // Main content
-            VStack(spacing: 6) {
-                tabSelector
-                searchField
-                content
-            }
-            .padding(.horizontal, 8)
-
-            poweredByBar
-        }
-        .padding(.top, 4)
-        .padding(.bottom, 4)
-        .background(containerBackground)
-        .onAppear {
-            viewModel.loadInitial()
-        }
-        .sheet(item: $confirmationMedia) { media in
-            KlipyMediaConfirmationView(
-                media: media,
-                theme: viewModel.config.theme,
-                onSelect: {
-                    confirmationMedia = nil
-                    onSelect(media)
-                },
-                onClose: {
-                    confirmationMedia = nil
+                VStack(spacing: 6) {
+                    tabSelector
+                    searchField
+                    content
                 }
-            )
+                .padding(.horizontal, 8)
+
+                poweredByBar
+            }
+            .padding(.top, 4)
+            .padding(.bottom, 4)
+            .background(containerBackground)
+            .onAppear {
+                store.send(.onAppear)
+            }
+            .sheet(item: $confirmationMedia) { media in
+                KlipyMediaConfirmationView(
+                    media: media,
+                    theme: store.config.theme,
+                    onSelect: {
+                        confirmationMedia = nil
+                        onSelect(media)
+                    },
+                    onClose: {
+                        confirmationMedia = nil
+                    }
+                )
+            }
         }
     }
 
     private var palette: KlipyThemePalette {
-        viewModel.config.theme.palette(for: colorScheme)
+        store.config.theme.palette(for: colorScheme)
     }
 
     // MARK: - Top handle
@@ -151,10 +165,10 @@ public struct KlipyPickerView: View {
 
     private var tabSelector: some View {
         Picker("Type", selection: Binding(
-            get: { viewModel.selectedTab },
-            set: { viewModel.didChangeTab($0) }
+            get: { store.selectedTab },
+            set: { store.send(.tabSelected($0)) }
         )) {
-            ForEach(viewModel.config.mediaTabs, id: \.self) { tab in
+            ForEach(store.config.mediaTabs, id: \.self) { tab in
                 Text(tab.title).tag(tab)
             }
         }
@@ -166,15 +180,15 @@ public struct KlipyPickerView: View {
     private var searchField: some View {
         HStack {
             TextField("Search", text: Binding(
-                get: { viewModel.query },
-                set: { viewModel.updateQuery($0) }
+                get: { store.query },
+                set: { store.send(.queryChanged($0)) }
             ))
             .textInputAutocapitalization(.never)
             .disableAutocorrection(true)
             .submitLabel(.search)
             .foregroundStyle(palette.primaryText)
             .onSubmit {
-                viewModel.submitSearch()
+                store.send(.searchSubmitted)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
@@ -185,9 +199,9 @@ public struct KlipyPickerView: View {
             .overlay(
                 HStack {
                     Spacer()
-                    if !viewModel.query.isEmpty {
+                    if !store.query.isEmpty {
                         Button {
-                            viewModel.updateQuery("")
+                            store.send(.clearSearchTapped)
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(palette.secondaryText)
@@ -204,25 +218,25 @@ public struct KlipyPickerView: View {
 
     private var content: some View {
         Group {
-            if viewModel.isLoading && viewModel.items.isEmpty {
+            if store.isLoading && store.items.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let error = viewModel.lastError, viewModel.items.isEmpty {
-                if error.isConnectivityError {
+            } else if let errorMessage = store.errorMessage, store.items.isEmpty {
+                if store.isOffline {
                     KlipyOfflineStateView {
-                        viewModel.loadInitial()
+                        store.send(.retryTapped)
                     }
                 } else {
                     VStack(spacing: 8) {
                         Text("Failed to load Klipy content.")
                             .font(.callout)
                             .foregroundStyle(palette.primaryText)
-                        Text(error.description)
+                        Text(errorMessage)
                             .font(.caption2)
                             .foregroundColor(palette.secondaryText)
                             .multilineTextAlignment(.center)
                         Button("Retry") {
-                            viewModel.loadInitial()
+                            store.send(.retryTapped)
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -235,16 +249,16 @@ public struct KlipyPickerView: View {
 
     private var scrollGrid: some View {
         KlipyMasonryFeedView(
-            items: viewModel.items,
-            metadata: viewModel.layoutMetadata,
-            maxItemsPerRow: viewModel.config.maxItemsPerRow,
+            items: store.items,
+            metadata: store.layoutMetadata,
+            maxItemsPerRow: store.config.maxItemsPerRow,
             spacing: 0,
             onLoadMore: { item in
-                viewModel.loadMoreIfNeeded(currentItem: item)
+                store.send(.loadMoreIfNeeded(item.id))
             }
         ) { media in
             Button {
-                if viewModel.config.showConfirmationScreen {
+                if store.config.showConfirmationScreen {
                     confirmationMedia = media
                 } else {
                     onSelect(media)
@@ -256,7 +270,7 @@ public struct KlipyPickerView: View {
         } advertisementTile: { advertisement in
             KlipyAdvertisementView(advertisement: advertisement)
         } footer: {
-            if viewModel.isLoading && !viewModel.items.isEmpty {
+            if store.isLoading && !store.items.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)

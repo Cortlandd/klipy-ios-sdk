@@ -42,7 +42,12 @@ let package = Package(
         ),
         .target(
             name: "KlipyUI",
-            dependencies: ["KlipyCore", "SDWebImageSwiftUI", "SDWebImageWebPCoder"],
+            dependencies: [
+                "KlipyCore",
+                "SDWebImageSwiftUI",
+                "SDWebImageWebPCoder",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+            ],
             path: "Sources/KlipyUI",
             resources: [.process("Resources/Media.xcassets")]
         ),
