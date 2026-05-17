@@ -19,7 +19,6 @@ final class KlipyClientItemsTests: XCTestCase {
     private func makeDummyClient() -> KlipyClient {
         let config = KlipyConfiguration(
             apiKey: "test-api-key",
-            baseURL: URL(string: "https://example.com")!,
             defaultLocale: nil,
             defaultPerPage: nil
         )

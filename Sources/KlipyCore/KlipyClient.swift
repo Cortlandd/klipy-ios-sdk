@@ -41,7 +41,7 @@ private extension KlipyClient {
         pathComponents: [String],
         queryItems: [String: String] = [:]
     ) throws -> URL {
-        var url = configuration.baseURL
+        var url = KlipyConfiguration.apiBaseURL
         for component in pathComponents {
             url.appendPathComponent(component)
         }
