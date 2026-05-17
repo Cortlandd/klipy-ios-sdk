@@ -51,7 +51,7 @@ Or add it in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Cortlandd/klipy-ios-sdk.git", from: "1.2.1")
+    .package(url: "https://github.com/Cortlandd/klipy-ios-sdk.git", from: "1.3.0")
 ],
 targets: [
     .target(
