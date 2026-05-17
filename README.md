@@ -218,6 +218,48 @@ mediaView.configure(with: media)
 
 `KlipyMediaView` gives UIKit screens a reusable display primitive for showing a selected GIF, sticker, meme, emoji, or clip without embedding SwiftUI themselves.
 
+### Embeddable grid controller
+
+```swift
+import UIKit
+import KlipyUI
+
+final class SearchResultsViewController: UIViewController, KlipyGridControllerDelegate {
+    private let client = KlipyClient.live(apiKey: "<YOUR_KLIPY_API_KEY>")
+    private lazy var gridController = KlipyGridController(
+        client: client,
+        content: .trending(kind: .gif, locale: "en-US"),
+        configuration: .init(maxItemsPerRow: 3, theme: .automatic)
+    )
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        gridController.delegate = self
+
+        addChild(gridController)
+        gridController.view.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(gridController.view)
+        NSLayoutConstraint.activate([
+            gridController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gridController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gridController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            gridController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+        gridController.didMove(toParent: self)
+    }
+
+    func search(for query: String) {
+        gridController.setContent(.search(kind: .gif, query: query, locale: "en-US"))
+    }
+
+    func klipyGridController(_ controller: KlipyGridController, didSelect media: KlipyMedia) {
+        print("Picked media from grid: \\(media.slug)")
+    }
+}
+```
+
+Use `KlipyGridController` when your app already owns its own search field, tabs, or navigation shell and only needs Klipy’s feed rendering, pagination, and ad-aware mixed-content parsing.
+
 ### Tray integration
 
 ```swift
