@@ -146,12 +146,12 @@ public struct KlipyTrayView: View {
                     } label: {
                         Text(tab.title)
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(palette.primaryText)
+                            .foregroundStyle(selected ? .black : palette.primaryText)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(selected ? Color.accentColor.opacity(0.18) : palette.secondarySurface)
+                                    .fill(selected ? .white : palette.secondarySurface)
                             )
                     }
                     .buttonStyle(.plain)
@@ -170,12 +170,12 @@ public struct KlipyTrayView: View {
                 } label: {
                     Text("All")
                         .font(.system(size: 13, weight: store.chosenCategory == nil ? .semibold : .regular))
-                        .foregroundStyle(palette.primaryText)
+                        .foregroundStyle(store.chosenCategory == nil ? .black : palette.primaryText)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(store.chosenCategory == nil ? Color.accentColor.opacity(0.18) : palette.secondarySurface)
+                                .fill(store.chosenCategory == nil ? .white : palette.secondarySurface)
                         )
                 }
                 .buttonStyle(.plain)
@@ -188,12 +188,12 @@ public struct KlipyTrayView: View {
                         Text(cat.category)
                             .lineLimit(1)
                             .font(.system(size: 13, weight: selected ? .semibold : .regular))
-                            .foregroundStyle(palette.primaryText)
+                            .foregroundStyle(selected ? .black : palette.primaryText)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
                             .background(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(selected ? Color.accentColor.opacity(0.18) : palette.secondarySurface)
+                                    .fill(selected ? .white : palette.secondarySurface)
                             )
                     }
                     .buttonStyle(.plain)

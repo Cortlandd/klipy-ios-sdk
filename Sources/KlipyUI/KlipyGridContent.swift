@@ -40,9 +40,4 @@ public struct KlipyGridConfiguration: Equatable, Sendable {
         self.theme = theme
     }
 
-    @available(*, deprecated, renamed: "maxItemsPerRow", message: "The grid uses a masonry feed now, so this value controls feed density instead of a strict grid column count.")
-    public var columns: Int {
-        get { maxItemsPerRow }
-        set { maxItemsPerRow = max(2, newValue) }
-    }
 }

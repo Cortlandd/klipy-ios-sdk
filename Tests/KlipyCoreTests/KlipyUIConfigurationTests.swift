@@ -58,13 +58,11 @@ final class KlipyUIConfigurationTests: XCTestCase {
         XCTAssertEqual(config.theme, .lightBlur)
     }
 
-    func testLegacyColumnsAliasStillControlsFeedDensity() {
-        var pickerConfig = KlipyPickerConfig(maxItemsPerRow: 3)
-        pickerConfig.columns = 5
-        XCTAssertEqual(pickerConfig.maxItemsPerRow, 5)
+    func testFeedDensityIsClampedToTwoOrMoreItemsPerRow() {
+        let pickerConfig = KlipyPickerConfig(maxItemsPerRow: 1)
+        XCTAssertEqual(pickerConfig.maxItemsPerRow, 2)
 
-        var trayConfig = KlipyTrayConfig(maxItemsPerRow: 3)
-        trayConfig.columns = 4
-        XCTAssertEqual(trayConfig.maxItemsPerRow, 4)
+        let trayConfig = KlipyTrayConfig(maxItemsPerRow: 0)
+        XCTAssertEqual(trayConfig.maxItemsPerRow, 2)
     }
 }

@@ -67,39 +67,6 @@ public struct KlipyTrayConfig: Equatable, Sendable {
         self.theme = theme
     }
 
-    @available(*, deprecated, renamed: "maxItemsPerRow", message: "The tray uses a masonry feed now, so this value controls feed density instead of a strict grid column count.")
-    public var columns: Int {
-        get { maxItemsPerRow }
-        set { maxItemsPerRow = max(2, newValue) }
-    }
-
-    @available(*, deprecated, message: "Use init(mediaTabs:initialTab:maxItemsPerRow:showTrending:showRecents:showCategories:showSearch:brandURL:) instead.")
-    public init(
-        mediaTabs: [KlipyPickerMediaTab],
-        initialTab: KlipyPickerMediaTab,
-        columns: Int,
-        locale: String? = nil,
-        showTrending: Bool,
-        showRecents: Bool,
-        showCategories: Bool,
-        showSearch: Bool,
-        brandURL: URL?,
-        theme: KlipyTheme = .automatic
-    ) {
-        self.init(
-            mediaTabs: mediaTabs,
-            initialTab: initialTab,
-            maxItemsPerRow: columns,
-            locale: locale,
-            showTrending: showTrending,
-            showRecents: showRecents,
-            showCategories: showCategories,
-            showSearch: showSearch,
-            brandURL: brandURL,
-            theme: theme
-        )
-    }
-
     /// Feed to use when the search query is empty.
     public var emptyQueryFeed: EmptyQueryFeed {
         if showTrending { return .trending }

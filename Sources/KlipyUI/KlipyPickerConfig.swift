@@ -61,35 +61,6 @@ public struct KlipyPickerConfig: Equatable, Sendable {
         self.theme = theme
     }
 
-    @available(*, deprecated, renamed: "maxItemsPerRow", message: "The picker uses a masonry feed now, so this value controls feed density instead of a strict grid column count.")
-    public var columns: Int {
-        get { maxItemsPerRow }
-        set { maxItemsPerRow = max(2, newValue) }
-    }
-
-    @available(*, deprecated, message: "Use init(mediaTabs:maxItemsPerRow:showRecents:showTrending:initialTab:) instead.")
-    public init(
-        mediaTabs: [KlipyPickerMediaTab],
-        columns: Int,
-        locale: String? = nil,
-        showRecents: Bool,
-        showTrending: Bool,
-        initialTab: KlipyPickerMediaTab,
-        showConfirmationScreen: Bool = false,
-        theme: KlipyTheme = .automatic
-    ) {
-        self.init(
-            mediaTabs: mediaTabs,
-            maxItemsPerRow: columns,
-            locale: locale,
-            showRecents: showRecents,
-            showTrending: showTrending,
-            initialTab: initialTab,
-            showConfirmationScreen: showConfirmationScreen,
-            theme: theme
-        )
-    }
-
     public var emptyQueryFeed: EmptyQueryFeed {
         if showTrending { return .trending }
         if showRecents { return .recent }
