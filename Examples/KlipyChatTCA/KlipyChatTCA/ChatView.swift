@@ -8,55 +8,63 @@
 
 import SwiftUI
 import ComposableArchitecture
+import Perception
 import KlipyCore
 import KlipyTray
 
 public struct ChatView: View {
-    @Bindable public var store: StoreOf<ChatFeature>
+    @Perception.Bindable public var store: StoreOf<ChatFeature>
 
     public init(store: StoreOf<ChatFeature>) {
         self.store = store
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            messagesList
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                messagesList
 
-            Divider()
+                Divider()
 
-            if !isAPIKeyConfigured {
-                Text("Set KLIPY_API_KEY in the scheme environment or the app's KLIPY_API_KEY Info.plist value to enable the tray.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 12)
+                if !isAPIKeyConfigured {
+                    Text("Set KLIPY_API_KEY in the scheme environment or the app's KLIPY_API_KEY Info.plist value to enable the tray.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12)
+                }
+
+                messageInputBar
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(Color(.systemBackground))
             }
+            .navigationTitle("Klipy Chat")
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear { store.send(.onAppear) }
+            .sheet(isPresented: $store.isTrayPresented) {
+                // Create the client once per sheet open; if you want a single instance,
+                // create it in State or a Dependency. For demo this is fine.
+                let client = KlipyClient(configuration: .init(apiKey: store.apiKey))
 
-            messageInputBar
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(Color(.systemBackground))
-        }
-        .navigationTitle("Klipy Chat")
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear { store.send(.onAppear) }
-        .sheet(isPresented: $store.isTrayPresented) {
-            // Create the client once per sheet open; if you want a single instance,
-            // create it in State or a Dependency. For demo this is fine.
-            let client = KlipyClient(configuration: .init(apiKey: store.apiKey))
+                let trayView = KlipyTrayView(
+                    client: client,
+                    config: store.trayConfig,
+                    onSelect: { media in
+                        store.send(.trayMediaSelected(media))
+                    },
+                    onError: { _ in }
+                )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
 
-            KlipyTrayView(
-                client: client,
-                config: store.trayConfig,
-                onSelect: { media in
-                    store.send(.trayMediaSelected(media))
-                },
-                onError: { _ in }
-            )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
-            .presentationCornerRadius(0)
+                if #available(iOS 16.4, *) {
+                    trayView.presentationCornerRadius(0)
+                } else {
+                    trayView
+                }
+            }
         }
     }
 

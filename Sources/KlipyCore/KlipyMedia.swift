@@ -19,7 +19,7 @@ public enum KlipyMediaType: String, Codable, Sendable, Equatable {
     case emoji
 
     /// Path segment used in URLs, e.g. "gifs", "stickers"
-    var pathSegment: String {
+    public var pathSegment: String {
         switch self {
         case .gif:     return "gifs"
         case .sticker: return "stickers"
