@@ -28,6 +28,14 @@ public enum KlipyMediaType: String, Codable, Sendable, Equatable {
         case .emoji:   return "emojis"
         }
     }
+
+    /// Canonical KLIPY share URL for a slug on the public website.
+    public func canonicalShareURL(for slug: String) -> URL {
+        let baseURL = URL(string: "https://klipy.com/explore")!
+        return baseURL
+            .appendingPathComponent(pathSegment)
+            .appendingPathComponent(slug)
+    }
 }
 
 // MARK: - Nested file structure
@@ -244,6 +252,11 @@ public struct KlipyMediaListPayload: Decodable, Sendable, Equatable {
 // MARK: - URL selection helpers
 
 public extension KlipyMedia {
+    /// Canonical KLIPY share URL for this media item on the public website.
+    var canonicalShareURL: URL {
+        type.canonicalShareURL(for: slug)
+    }
+
     /// Aspect ratio used for grid tiles.
     ///
     /// - For most types we use `.webp` as-is.

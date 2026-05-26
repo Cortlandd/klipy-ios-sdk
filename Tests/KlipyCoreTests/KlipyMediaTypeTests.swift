@@ -16,4 +16,27 @@ final class KlipyMediaTypeTests: XCTestCase {
         XCTAssertEqual(KlipyMediaType.meme.pathSegment, "static-memes")
         XCTAssertEqual(KlipyMediaType.emoji.pathSegment, "emojis")
     }
+
+    func testCanonicalShareURLsUseThePublicExploreRoutes() {
+        XCTAssertEqual(
+            KlipyMediaType.gif.canonicalShareURL(for: "wave-hi").absoluteString,
+            "https://klipy.com/explore/gifs/wave-hi"
+        )
+        XCTAssertEqual(
+            KlipyMediaType.sticker.canonicalShareURL(for: "thumbs-up").absoluteString,
+            "https://klipy.com/explore/stickers/thumbs-up"
+        )
+        XCTAssertEqual(
+            KlipyMediaType.clip.canonicalShareURL(for: "party-time").absoluteString,
+            "https://klipy.com/explore/clips/party-time"
+        )
+    }
+
+    func testMediaCanonicalShareURLDelegatesToItsMediaType() {
+        let media = KlipyMedia(id: "1", slug: "hello-there", type: .emoji, title: "Hello")
+        XCTAssertEqual(
+            media.canonicalShareURL.absoluteString,
+            "https://klipy.com/explore/emojis/hello-there"
+        )
+    }
 }
